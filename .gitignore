@@ -1,0 +1,20 @@
+# 运行态与敏感数据，切勿提交
+state/
+*.log
+*.json.bak
+
+# 依赖
+node_modules/
+.npm-cache/
+.pw-browsers/
+.edge-profile/
+
+# 抓下来的页面/样本（体积大且含个人信息）
+probe/out/
+probe/**/*.json
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

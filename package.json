@@ -1,0 +1,25 @@
+{
+  "name": "hust-smartcourse-cli",
+  "version": "1.0.0",
+  "private": false,
+  "type": "module",
+  "description": "智慧华中大课程平台任务点自动化 CLI：视频 / 文档 / 测验，纯 HTTP 实现，含 CAS 登录与播放协议逆向",
+  "keywords": ["chaoxing", "fanya", "mooc", "hust", "automation"],
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "scripts": {
+    "login": "node src/login.mjs --qr",
+    "import-cookies": "node src/import-cookies.mjs",
+    "check": "node src/import-cookies.mjs --check",
+    "probe": "node src/probe-session.mjs",
+    "course": "node src/course.mjs",
+    "doc": "node src/doc.mjs",
+    "play": "node src/play.mjs",
+    "quiz": "node src/quiz.mjs",
+    "run": "node src/run.mjs",
+    "test": "node test/mock-play.mjs"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  }
+}
