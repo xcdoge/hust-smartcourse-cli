@@ -127,30 +127,32 @@ node src/login-qr.mjs
 
 **方式 B：账号密码登录（全自动）**
 
-先把账号密码写进 `state/cred.txt`（两行，第一行账号、第二行密码）：
-
-```powershell
-# Windows
-notepad state\cred.txt
-```
+先把账号密码**加密**存到本地（一次性）：
 
 ```bash
-# macOS / Linux
-$EDITOR state/cred.txt
+node src/cred.mjs save <你的学号> <你的密码>
 ```
 
-文件内容：
-
-```
-<你的学号>
-<你的密码>
-```
+> 凭据用 **AES-256-GCM** 加密，密钥由「主机名 + 系统用户名」经 scrypt 派生——
+> **换台机器或换个用户就解不开**。想再叠一层口令，设环境变量 `HUST_CLI_KEY=<任意一段话>` 即可。
+> 这不是防得住有权限的攻击者，而是防止文件被顺手拷走、同步到网盘后被人直接打开。
 
 然后运行：
 
 ```bash
-node src/login-pw.mjs
+node src/login-pw.mjs          # 自动读加密凭据 + 自动识别验证码
+node src/login-pw.mjs --save   # 凭据是临时手输的，登录成功后自动加密保存
 ```
+
+凭据管理：
+
+```bash
+node src/cred.mjs status   # 看存了没有、本机能不能解开
+node src/cred.mjs show     # 解密查看（确认存对了）
+node src/cred.mjs forget   # 清除本地凭据
+```
+
+也兼容旧版明文 `state/cred.txt`（两行：学号 / 密码），跑一次 `node src/cred.mjs save` 就会自动迁移成加密文件并删掉明文。
 
 自动取验证码 → 识别 → 提交；识别不准或服务端判错会**自动换图重试**（最多 4 次），低置信度的图不会被浪费成失败尝试。
 
@@ -240,6 +242,7 @@ node src/quiz.mjs submit
 | `src/login-qr.mjs` | 扫码登录（全自动） |
 | `src/login-pw.mjs` | 账密登录（含验证码 OCR；`--manual` / `--code=` 为退路） |
 | `src/import-cookies.mjs` | 从 cURL / Cookie 头 / TSV 导入 cookie（自动取最新文件） |
+| `src/cred.mjs` | 凭据管理：`save` 加密保存 / `show` 解密查看 / `status` / `forget` |
 | `src/probe-session.mjs` | 会话体检，报告缺失或过期的 cookie |
 | `src/course.mjs` | 抓章节 / 视频 / 文档 / 测验 |
 | `src/scan.mjs` | 逐 tab 全量扫描，找齐所有任务点 |
@@ -256,7 +259,8 @@ node src/quiz.mjs submit
 | 文件 | 说明 |
 | --- | --- |
 | `state/target.json` | 课程参数（`courseId` / `clazzId` / `cpi` / `enc`） |
-| `state/cred.txt` | 账密登录用，两行：账号 / 密码 |
+| `state/cred.enc.json` | **加密凭据**（AES-256-GCM，机器绑定） |
+| `state/cred.txt` | 旧版明文凭据，仍兼容；建议用 `cred save` 迁移 |
 | `state/cookies.json` | 登录态（自动生成） |
 | `state/cookies.txt` | 手动导入 cookie 的入口 |
 | `state/course.json` | 课程结构快照 |

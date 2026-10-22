@@ -3,14 +3,15 @@
 // 验证码用自带 OCR（src/lib/captcha.mjs，模型 data/captcha-model.json）；
 // 识别不准或服务端判错时自动换一张重试。
 //
-//   node src/login-pw2.mjs            # 全自动（默认）
-//   node src/login-pw2.mjs --manual   # 只取验证码，人工看后自己 --code=
-//   node src/login-pw2.mjs --code=1234
+//   node src/login-pw.mjs            # 全自动（默认）
+//   node src/login-pw.mjs --manual   # 只取验证码，人工看后自己 --code=
+//   node src/login-pw.mjs --code=1234
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { CookieJar, httpGet, follow } from './lib/http.mjs';
 import { STATE, COOKIES, SMART_ORIGIN, COURSE_ID, CLAZZ_ID } from './lib/const.mjs';
 import { recognize } from './lib/captcha.mjs';
+import { loadCreds, saveCreds } from './lib/secret.mjs';
 
 const CAS = 'https://pass.hust.edu.cn/cas';
 const SERVICE = 'http://smartcourse.hust.edu.cn/fyportal-smartcourse/sso/hust';
@@ -22,6 +23,7 @@ const MIN_CONF = 0.05;
 const argv = process.argv.slice(2);
 const manual = argv.includes('--manual');
 const codeArg = (argv.find((a) => a.startsWith('--code=')) || '').split('=')[1] || '';
+const wantSave = argv.includes('--save');
 
 function rsaEncrypt(b64Key, text) {
   const key = crypto.createPublicKey({ key: Buffer.from(b64Key, 'base64'), format: 'der', type: 'spki' });
@@ -39,15 +41,7 @@ const UA_JSON = JSON.stringify({
   os: { name: 'Windows', version: '10' },
 });
 
-function loadCreds() {
-  const [u, p] = fs
-    .readFileSync(`${STATE}/cred.txt`, 'utf8')
-    .split(/\r?\n/)
-    .map((s) => s.trim())
-    .filter(Boolean);
-  if (!u || !p) throw new Error('state/cred.txt 需要两行：账号 / 密码');
-  return { username: u, password: p };
-}
+// 凭据来自 src/lib/secret.mjs：优先加密文件，其次旧版明文 cred.txt
 
 function visitorId() {
   const f = `${STATE}/visitor.json`;
@@ -173,6 +167,11 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   const site = await verifySite(jar);
   fs.writeFileSync(COOKIES, JSON.stringify(jar.toJSON(), null, 2));
   console.log(`✔ 登录成功 | 换票 ${sso.res.status} | 章节 ${site.chapters} | cookie 已写 ${COOKIES}`);
+  if (wantSave) {
+    const c = loadCreds();
+    const f = saveCreds(c.username, c.password);
+    console.log(`✔ 凭据已加密保存到 ${f}（下次不用再输）`);
+  }
   process.exit(site.chapters > 0 ? 0 : 3);
 }
 
