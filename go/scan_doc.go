@@ -24,9 +24,23 @@ type ScanRow struct {
 }
 
 type ScanResult struct {
+	CourseID string         `json:"courseId"`
 	Chapters int            `json:"chapters"`
 	Types    map[string]int `json:"typeCount"`
 	Rows     []ScanRow      `json:"rows"`
+}
+
+// loadScanFor 读取 scan.json，并校验它属于当前课程
+func loadScanFor(t Target) (*ScanResult, error) {
+	var res ScanResult
+	if err := readJSON(statePath("scan.json"), &res); err != nil {
+		return nil, fmt.Errorf("缺少 state/scan.json，先执行 hsc scan")
+	}
+	if res.CourseID != "" && res.CourseID != t.CourseID {
+		return nil, fmt.Errorf("state/scan.json 属于另一门课（courseId %s），当前是 %s，先重新执行 hsc scan",
+			res.CourseID, t.CourseID)
+	}
+	return &res, nil
 }
 
 // cmdScan 逐 tab 全量扫描（num=0 学习材料、num=1 练习题…）
@@ -45,7 +59,7 @@ func cmdScan() error {
 	}
 	logf("章节 %d 个", len(chapters))
 
-	res := ScanResult{Chapters: len(chapters), Types: map[string]int{}}
+	res := ScanResult{CourseID: t.CourseID, Chapters: len(chapters), Types: map[string]int{}}
 
 	// 并发扫每个章节的所有 tab（原来串行 6.6 秒）
 	perChapter := make([][]ScanRow, len(chapters))
@@ -122,9 +136,9 @@ func cmdDoc(args []string) error {
 	if err != nil {
 		return err
 	}
-	var res ScanResult
-	if err := readJSON(statePath("scan.json"), &res); err != nil {
-		return fmt.Errorf("缺少 state/scan.json，先执行 hsc scan")
+	res, err := loadScanFor(t)
+	if err != nil {
+		return err
 	}
 	c := newClient(NewJar())
 	if err := loadSession(c); err != nil {

@@ -288,6 +288,10 @@ func cmdPlay(args []string) error {
 	if err := readJSON(statePath("course.json"), &snap); err != nil {
 		return fmt.Errorf("缺少 state/course.json，先执行 hsc course")
 	}
+	// 快照可能是另一门课的（切课后没重抓），拿它去播放会一直报失败
+	if cur, ok := loadTargetIfExists(); ok && snap.Target.CourseID != "" && snap.Target.CourseID != cur.CourseID {
+		return fmt.Errorf("state/course.json 属于另一门课（courseId %s），先执行 hsc course", snap.Target.CourseID)
+	}
 	c := newClient(NewJar())
 	if err := loadSession(c); err != nil {
 		return err

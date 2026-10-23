@@ -225,9 +225,9 @@ func cmdQuizDump() error {
 	if err != nil {
 		return err
 	}
-	var res ScanResult
-	if err := readJSON(statePath("scan.json"), &res); err != nil {
-		return fmt.Errorf("缺少 state/scan.json，先执行 hsc scan")
+	res, err := loadScanFor(t)
+	if err != nil {
+		return err
 	}
 	c := newClient(NewJar())
 	if err := loadSession(c); err != nil {

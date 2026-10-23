@@ -102,5 +102,5 @@ for (const r of rows.filter((x) => !/insertvideo|insertdoc/.test(x.module))) {
   console.log(`  [${r.chapter} p${r.page} ${r.pageTitle}] ${r.module}/${r.type} ${r.worktype} ${r.title.slice(0, 40)} passed=${r.isPassed}`);
 }
 
-fs.writeFileSync(`${STATE}/scan.json`, JSON.stringify({ chapters: chapters.length, typeCount, pageTitles, rows }, null, 2));
+fs.writeFileSync(`${STATE}/scan.json`, JSON.stringify({ courseId: COURSE_ID, chapters: chapters.length, typeCount, pageTitles, rows }, null, 2));
 console.log(`\n共 ${rows.length} 个附件，空页 ${emptyPages}，已写 state/scan.json`);

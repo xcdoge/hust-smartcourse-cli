@@ -4,7 +4,7 @@
 //   node src/quiz.mjs submit --only=<index>   只交某一份
 import fs from 'node:fs';
 import { CookieJar, follow } from './lib/http.mjs';
-import { SMART_ORIGIN, COOKIES, STATE, CLAZZ_ID, CPI, requireTarget} from './lib/const.mjs';
+import { SMART_ORIGIN, COOKIES, STATE, COURSE_ID, CLAZZ_ID, CPI, requireTarget} from './lib/const.mjs';
 import { braceMatch } from './lib/brace.mjs';
 import { parseQuiz } from './lib/quiz-parse.mjs';
 
@@ -58,6 +58,11 @@ function getCourse() {
   if (_course) return _course;
   if (!fs.existsSync(`${STATE}/course.json`)) throw new Error('缺少 state/course.json，先执行 node src/course.mjs');
   _course = JSON.parse(fs.readFileSync(`${STATE}/course.json`, 'utf8'));
+  // 快照可能是另一门课的（切课后没重抓），拿它抓题/交卷会一直 403
+  const snapId = _course?.target?.courseId || '';
+  if (snapId && COURSE_ID && String(snapId) !== String(COURSE_ID)) {
+    throw new Error(`state/course.json 属于另一门课（courseId ${snapId}），先执行 node src/course.mjs`);
+  }
   return _course;
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
