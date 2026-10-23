@@ -43,7 +43,7 @@ base_url = "https://api.openai.com/v1"
 api_key = ""
 model = "gpt-4o-mini"
 temperature = 0.2
-max_tokens = 1024
+max_tokens = 4096
 timeout_seconds = 60
 
 [quiz]
@@ -88,7 +88,7 @@ func loadConfig() (*Config, bool, error) {
 		c.LLM.Model = "gpt-4o-mini"
 	}
 	if c.LLM.MaxTokens <= 0 {
-		c.LLM.MaxTokens = 1024
+		c.LLM.MaxTokens = 4096
 	}
 	if c.LLM.TimeoutSeconds <= 0 {
 		c.LLM.TimeoutSeconds = 60

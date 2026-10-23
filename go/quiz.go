@@ -336,6 +336,24 @@ func answerAsString(a Answer) (string, []string) {
 	return "", nil
 }
 
+// submitReason 从平台返回里取出可读原因，不打整坨 JSON
+func submitReason(msg string) string {
+	var out struct {
+		Msg    string `json:"msg"`
+		Error  string `json:"error"`
+		Status bool   `json:"status"`
+	}
+	if err := json.Unmarshal([]byte(msg), &out); err == nil {
+		if m := firstNonEmpty(out.Msg, out.Error); m != "" {
+			return strings.TrimSpace(m)
+		}
+		if !out.Status {
+			return "服务端返回 status=false"
+		}
+	}
+	return truncate(strings.TrimSpace(msg), 60)
+}
+
 // cmdQuizSubmit 交卷
 func cmdQuizSubmit(only int) error {
 	t, err := loadTarget()
@@ -475,10 +493,10 @@ func cmdQuizSubmit(only int) error {
 		ok := strings.Contains(msg, `"status":true`) || strings.Contains(msg, "success")
 		if ok {
 			okCount++
-			logf("[%d] %d/%d 题  %s", q.Index, filled, len(q.Questions), truncate(msg, 50))
+			logf("[%d] %d/%d 题  已提交", q.Index, filled, len(q.Questions))
 		} else {
 			failCount++
-			logf("[%d] 失败 -> %s", q.Index, truncate(msg, 80))
+			logf("[%d] 提交失败: %s", q.Index, submitReason(msg))
 		}
 		sleepSec(0.3)
 	}

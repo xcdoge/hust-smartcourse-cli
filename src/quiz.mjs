@@ -276,8 +276,11 @@ async function submit() {
       const t = ((resp.text || '').match(/<title>([^<]*)<\/title>/) || [])[1] || '无标题';
       const why = /查看作业|已提交|已批阅/.test(resp.text) ? '作业已提交过，不能重复提交' : `平台返回 HTML 错误页（标题 ${t.trim()}）`;
       console.log(`[${q.index}] 提交失败: ${why}`);
+    } else if (ok) {
+      console.log(`[${q.index}] ${filled}/${q.questions.length} 题  已提交`);
     } else {
-      console.log(`[${q.index}] 填 ${filled}/${q.questions.length} 题 -> HTTP${resp.status} status=${resp.data?.status} msg=${resp.data?.msg || ''}`);
+      const why = resp.data?.msg || resp.data?.error || (resp.data ? '服务端返回 status=false' : `HTTP ${resp.status}`);
+      console.log(`[${q.index}] 提交失败: ${why}`);
     }
     results.push({ index: q.index, ok, filled, resp });
     await sleep(1500);

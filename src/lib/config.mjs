@@ -16,7 +16,7 @@ base_url = "https://api.openai.com/v1"
 api_key = ""
 model = "gpt-4o-mini"
 temperature = 0.2
-max_tokens = 1024
+max_tokens = 4096
 timeout_seconds = 60
 
 [quiz]
@@ -54,7 +54,7 @@ export function loadConfig() {
       api_key: llm.api_key || '',
       model: llm.model || 'gpt-4o-mini',
       temperature: typeof llm.temperature === 'number' ? llm.temperature : 0.2,
-      max_tokens: llm.max_tokens || 1024,
+      max_tokens: llm.max_tokens || 4096,
       timeout_seconds: llm.timeout_seconds || 60,
     },
     quiz: {
