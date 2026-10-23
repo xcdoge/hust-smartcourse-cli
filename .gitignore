@@ -18,3 +18,11 @@ probe/**/*.json
 .idea/
 .DS_Store
 Thumbs.db
+
+# Go 构建产物
+/"cmd/
+
+# Go 构建产物
+go/hsc
+go/hsc.exe
+go/state/
