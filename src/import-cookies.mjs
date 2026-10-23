@@ -5,15 +5,16 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CookieJar } from './lib/http.mjs';
 import { verify } from './lib/verify.mjs';
+import { stateFile } from './lib/const.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const STATE = path.join(ROOT, 'state');
-const SRC_CANDIDATES = [path.join(STATE, 'cookie.txt'), path.join(STATE, 'cookies.txt')];
+const SRC_CANDIDATES = [stateFile('cookie.txt'), stateFile('cookies.txt')];
 // 取最近修改的那一份（两个文件名历史上都用过，避免读到旧快照）
 const existing = SRC_CANDIDATES.filter((p) => fs.existsSync(p));
 existing.sort((a, b) => fs.statSync(b).mtimeMs - fs.statSync(a).mtimeMs);
 const SRC = existing[0] || SRC_CANDIDATES[0];
-const DEST = path.join(STATE, 'cookies.json');
+const DEST = stateFile('cookies.json');
 
 function parse(raw) {
   const t = raw.trim();

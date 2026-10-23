@@ -7,12 +7,12 @@ import crypto from 'node:crypto';
 import QRCode from 'qrcode';
 import { CookieJar, follow } from './lib/http.mjs';
 import { SSO_SERVICE } from './lib/cas.mjs';
-import { COURSE_URL, STATE, COOKIES } from './lib/const.mjs';
+import { COURSE_URL, STATE, COOKIES, stateFile} from './lib/const.mjs';
 import { verify as verifySession } from './lib/verify.mjs';
 
-const QR_PNG = path.join(STATE, 'qr.png');
-const LOG = path.join(STATE, 'login.log');
-const PENDING = path.join(STATE, 'pending.json');
+const QR_PNG = stateFile('qr.png');
+const LOG = stateFile('login.log');
+const PENDING = stateFile('pending.json');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -145,10 +145,10 @@ async function cap() {
   const s = new CasSession();
   await s.open();
   const { buffer, contentType } = await s.captcha();
-  const p = path.join(STATE, 'captcha.png');
+  const p = stateFile('captcha.png');
   fs.writeFileSync(p, buffer);
   fs.writeFileSync(
-    path.join(STATE, 'cas-pending.json'),
+    stateFile('cas-pending.json'),
     JSON.stringify({ page: s.page, jar: s.jar.toJSON(), at: Date.now() }, null, 2)
   );
   log('验证码已保存', p, contentType, buffer.length, 'bytes');
@@ -158,7 +158,7 @@ async function cap() {
 // 密码模式（fallback）：从 state/cred.txt 读账号密码，密码不打印、不入日志
 async function pw() {
   const { CasSession } = await import('./lib/cas.mjs');
-  const f = path.join(STATE, 'cred.txt');
+  const f = stateFile('cred.txt');
   if (!fs.existsSync(f)) {
     console.log('NO_CRED_FILE  请把学号、密码分两行写进 state/cred.txt');
     return;
@@ -177,7 +177,7 @@ async function pw() {
   const capArg = (process.argv.find((a) => a.startsWith('--captcha=')) || '').split('=')[1] || '';
 
   const s = new CasSession();
-  const pendFile = path.join(STATE, 'cas-pending.json');
+  const pendFile = stateFile('cas-pending.json');
   // 若刚取过验证码，复用同会话（lt/execution/JSESSIONID 必须一致）
   let reused = false;
   if (capArg && fs.existsSync(pendFile)) {
@@ -196,7 +196,7 @@ async function pw() {
   if (!r.ok) {
     log('登录失败:', r.message);
     if (r.html) {
-      const dump = path.join(STATE, 'last-login-fail.html');
+      const dump = stateFile('last-login-fail.html');
       fs.writeFileSync(dump, r.html);
       log('失败页已存:', dump, '长度', r.html.length);
     }

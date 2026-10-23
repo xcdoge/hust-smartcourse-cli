@@ -2,7 +2,7 @@
 //   node src/run.mjs [--speed=1.5] [--tick=15] [--dry] [--max=20]
 import fs from 'node:fs';
 import { CookieJar } from './lib/http.mjs';
-import { COOKIES, STATE, COURSE_URL, BASE, COURSE_ID, CLAZZ_ID, CPI, ENC } from './lib/const.mjs';
+import { COOKIES, STATE, COURSE_URL, BASE, COURSE_ID, CLAZZ_ID, CPI, ENC, stateFile} from './lib/const.mjs';
 import { verify } from './lib/verify.mjs';
 import { follow } from './lib/http.mjs';
 import { playVideo, DEFAULT_BASE } from './lib/player.mjs';
@@ -85,7 +85,7 @@ log(`任务点: ${uniq.length} 个（视频 ${uniq.filter((p) => p.type === '视
 uniq.slice(0, 20).forEach((p) => log(`  [${p.type}] objectid=${p.objectid} jobid=${p.jobid} knowledge=${p.knowledgeId || '-'}`));
 
 fs.writeFileSync(
-  `${STATE}/course.json`,
+  `stateFile('course.json')`,
   JSON.stringify({ fetchedAt: new Date().toISOString(), courseId: COURSE_ID, clazzId: CLAZZ_ID, points: uniq }, null, 2)
 );
 if (uniq.length === 0) {

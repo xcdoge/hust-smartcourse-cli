@@ -9,7 +9,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { CookieJar, follow } from './lib/http.mjs';
-import { SMART_ORIGIN, BASE, COURSE_ID, CLAZZ_ID, CPI, COOKIES, STATE, requireTarget} from './lib/const.mjs';
+import { SMART_ORIGIN, BASE, COURSE_ID, CLAZZ_ID, CPI, COOKIES, STATE, requireTarget, stateFile} from './lib/const.mjs';
 import { braceMatch } from './lib/brace.mjs';
 
 
@@ -158,7 +158,7 @@ if (chapters.length === 0 || points.length === 0) {
 }
 
 fs.writeFileSync(
-  `${STATE}/course.json`,
+  `stateFile('course.json')`,
   JSON.stringify(
     { fetchedAt: new Date().toISOString(), courseId: COURSE_ID, clazzId: CLAZZ_ID, reportUrl: reportUrlGlobal, studyEnc, chapters, points, works },
     null,

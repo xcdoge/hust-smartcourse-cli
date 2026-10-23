@@ -83,16 +83,20 @@ export GOTMPDIR=$GOPATH/tmp
 
 ## 状态文件
 
-`state/` 全部不入库（`.gitignore` 已排除），里面是登录态和运行数据：
+`state/` 全部不入库（`.gitignore` 已排除），按用途分子目录：
 
-| 文件 | 内容 |
+| 路径 | 内容 |
 | --- | --- |
-| `target.json` | 课程参数，`hsc init` 生成 |
-| `cookies.json` | 登录态 |
-| `cred.enc.json` | 加密凭据（AES-256-GCM + scrypt，密钥绑机器） |
-| `config.toml` | LLM 配置，程序自动生成 |
-| `course.json` / `scan.json` | 结构与扫描快照 |
-| `quizzes.json` / `answers.json` | 题目与答案 |
+| `config.toml` | LLM 配置，程序自动生成（留在顶层）|
+| `auth/cookies.json` | 登录态 |
+| `auth/cred.enc.json` | 加密凭据（AES-256-GCM + scrypt，密钥绑机器）|
+| `course/target.json` | 课程参数，`hsc init` 生成 |
+| `course/course.json` / `course/scan.json` | 结构与扫描快照（带 courseId，用于校验）|
+| `quiz/quizzes.json` / `quiz/answers.json` / `quiz/qbank.json` | 题目、答案、题库 |
+| `logs/play.log` | 播放日志 |
+
+路径统一走 `statePath(name)`（Go）/ `stateFile(name)`（Node），**不要在别处手搓 `state/xxx`**。
+新增文件时先往这两张布局表里加一行，迁移逻辑会自动搬运旧文件。
 
 **任何情况下都不要把这些文件提交进仓库，也不要打进发布包。**
 打 `dist/*.zip` 时排除 `state/`、`dist/`、`.git/`、`*.exe`、`*.log`。

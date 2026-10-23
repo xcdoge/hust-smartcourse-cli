@@ -11,10 +11,10 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
-import { STATE } from './const.mjs';
+import { STATE, stateFile} from './const.mjs';
 
-const ENC_FILE = path.join(STATE, 'cred.enc.json');
-const TXT_FILE = path.join(STATE, 'cred.txt');
+const ENC_FILE = stateFile('cred.enc.json');
+const TXT_FILE = stateFile('cred.txt');
 const VERSION = 1;
 
 function mask(s) {

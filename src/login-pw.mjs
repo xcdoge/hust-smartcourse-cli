@@ -9,7 +9,7 @@
 import fs from 'node:fs';
 import crypto from 'node:crypto';
 import { CookieJar, httpGet, follow } from './lib/http.mjs';
-import { STATE, COOKIES, SMART_ORIGIN, COURSE_ID, CLAZZ_ID } from './lib/const.mjs';
+import { STATE, COOKIES, SMART_ORIGIN, COURSE_ID, CLAZZ_ID, stateFile} from './lib/const.mjs';
 import { recognize } from './lib/captcha.mjs';
 import { loadCreds, saveCreds } from './lib/secret.mjs';
 
@@ -47,7 +47,7 @@ const UA_JSON = JSON.stringify({
 // 凭据来自 src/lib/secret.mjs：优先加密文件，其次旧版明文 cred.txt
 
 function visitorId() {
-  const f = `${STATE}/visitor.json`;
+  const f = `stateFile('visitor.json')`;
   try {
     const v = JSON.parse(fs.readFileSync(f, 'utf8')).visitorId;
     if (v) return v;
@@ -66,7 +66,7 @@ async function freshCaptcha() {
   const cap = await httpGet(`${CAS}/code`, jar);
   const buf = Buffer.from(await cap.arrayBuffer());
   const ext = buf.slice(0, 3).toString('ascii') === 'GIF' ? 'gif' : 'png';
-  fs.writeFileSync(`${STATE}/login-captcha.${ext}`, buf);
+  fs.writeFileSync(`stateFile('login-captcha.')${ext}`, buf);
   return { jar, lt, execution, captcha: buf };
 }
 
@@ -124,12 +124,12 @@ function exchange(jar) {
 // ---------- 手工模式 ----------
 if (manual) {
   const { jar, lt, execution } = await freshCaptcha();
-  fs.writeFileSync(`${STATE}/login-pending.json`, JSON.stringify({ lt, execution, jar: jar.toJSON() }, null, 2));
+  fs.writeFileSync(`stateFile('login-pending.json')`, JSON.stringify({ lt, execution, jar: jar.toJSON() }, null, 2));
   console.log(`验证码已存 state/login-captcha.gif | lt=${lt.slice(0, 14)}…`);
   process.exit(0);
 }
 if (codeArg) {
-  const pending = JSON.parse(fs.readFileSync(`${STATE}/login-pending.json`, 'utf8'));
+  const pending = JSON.parse(fs.readFileSync(`stateFile('login-pending.json')`, 'utf8'));
   const jar = new CookieJar();
   jar.load(pending.jar);
   const r = await submit(jar, pending.lt, pending.execution, codeArg);

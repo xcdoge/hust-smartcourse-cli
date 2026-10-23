@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import QRCode from 'qrcode';
 import { CookieJar, follow } from './lib/http.mjs';
-import { STATE, COOKIES, SMART_ORIGIN, COURSE_ID, CLAZZ_ID } from './lib/const.mjs';
+import { STATE, COOKIES, SMART_ORIGIN, COURSE_ID, CLAZZ_ID, stateFile} from './lib/const.mjs';
 
 import { maybeHelp } from './lib/help.mjs';
 maybeHelp('login-qr');
@@ -20,7 +20,7 @@ const log = (...a) => console.log(...a);
 
 const uuid = crypto.randomBytes(16).toString('hex');
 const qrContent = `${CAS}/qyQrLogin?uuid=${uuid}&service=`;
-const qrPath = `${STATE}/login-qr.png`;
+const qrPath = `stateFile('login-qr.png')`;
 await QRCode.toFile(qrPath, qrContent, { width: 320, margin: 1 });
 log('二维码已生成:', qrPath);
 log('内容:', qrContent);

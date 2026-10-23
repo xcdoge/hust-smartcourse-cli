@@ -3,7 +3,7 @@
 //   node src/play.mjs --all [--speed=1.5]
 import fs from 'node:fs';
 import { CookieJar } from './lib/http.mjs';
-import { COOKIES, STATE, CLAZZ_ID, requireTarget} from './lib/const.mjs';
+import { COOKIES, STATE, CLAZZ_ID, requireTarget, stateFile} from './lib/const.mjs';
 import { playVideo, DEFAULT_BASE } from './lib/player.mjs';
 
 
@@ -31,7 +31,7 @@ const argv = Object.fromEntries(
 );
 
 const ts = () => new Date().toISOString().slice(11, 19);
-const LOGFILE = `${STATE}/play.log`;
+const LOGFILE = `stateFile('play.log')`;
 const log = (...a) => {
   const line = `[${ts()}] ${a.join(' ')}`;
   console.log(line);
@@ -49,7 +49,7 @@ jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
 
 let points = [];
 if (argv.all === 'true') {
-  const f = `${STATE}/course.json`;
+  const f = `stateFile('course.json')`;
   if (!fs.existsSync(f)) {
     console.log('没有 state/course.json，先跑 node src/course.mjs');
     process.exit(1);
@@ -66,7 +66,7 @@ if (argv.all === 'true') {
 } else if (argv.objectid) {
   // 允许直接从 course.json 里按 objectId 找完整参数
   let meta = { objectid: argv.objectid, jobid: argv.jobid };
-  const f = `${STATE}/course.json`;
+  const f = `stateFile('course.json')`;
   if (fs.existsSync(f)) {
     const c = JSON.parse(fs.readFileSync(f, 'utf8'));
     const hit = (c.points || []).find((p) => p.objectId === argv.objectid);

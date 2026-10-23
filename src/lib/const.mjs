@@ -4,7 +4,46 @@ import fs from 'node:fs';
 
 export const ROOT = path.resolve(import.meta.dirname, '..', '..');
 export const STATE = path.join(ROOT, 'state');
-export const COOKIES = path.join(STATE, 'cookies.json');
+
+// state/ 下按用途分子目录，避免十几个文件平铺
+const LAYOUT = {
+  'cookies.json': 'auth',
+  'cred.enc.json': 'auth',
+  'cred.txt': 'auth',
+  'visitor.json': 'auth',
+  'login-qr.png': 'auth',
+  'target.json': 'course',
+  'courses.json': 'course',
+  'course.json': 'course',
+  'scan.json': 'course',
+  'quizzes.json': 'quiz',
+  'answers.json': 'quiz',
+  'qbank.json': 'quiz',
+  'quiz-readable.txt': 'quiz',
+  'play.log': 'logs',
+  'config.toml': '',
+};
+
+/** state 下某个文件的完整路径（自动落到子目录） */
+export function stateFile(name) {
+  const sub = LAYOUT[name] || '';
+  return sub ? path.join(STATE, sub, name) : path.join(STATE, name);
+}
+
+// 把旧版平铺的文件搬进子目录
+try {
+  for (const [name, sub] of Object.entries(LAYOUT)) {
+    if (!sub) continue;
+    const oldPath = path.join(STATE, name);
+    const newPath = path.join(STATE, sub, name);
+    if (fs.existsSync(oldPath) && !fs.existsSync(newPath)) {
+      fs.mkdirSync(path.join(STATE, sub), { recursive: true });
+      fs.renameSync(oldPath, newPath);
+    }
+  }
+} catch {}
+
+export const COOKIES = stateFile('cookies.json');
 
 export const SMART_ORIGIN = 'https://smartcourse.hust.edu.cn';
 export const BASE = `${SMART_ORIGIN}/mooc-smartcourse`;
@@ -12,7 +51,7 @@ export const BASE = `${SMART_ORIGIN}/mooc-smartcourse`;
 // 目标课程从 state/target.json 读取（示例见 config/target.example.json）
 // 注意：这里**不再直接退出进程** —— 登录、退出登录等操作并不需要课程配置。
 // 需要课程的脚本请调用 requireTarget()。
-const targetFile = path.join(STATE, 'target.json');
+const targetFile = stateFile('target.json');
 let target = {};
 try {
   target = JSON.parse(fs.readFileSync(targetFile, 'utf8'));

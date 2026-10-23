@@ -7,6 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfig, maskKey, CONFIG_PATH } from './lib/config.mjs';
 import { loadBank, saveBank, answerFromBank, storeAnswer } from './lib/bank.mjs';
+import { stateFile } from './lib/const.mjs';
 
 import { maybeHelp } from './lib/help.mjs';
 maybeHelp('solve.mjs');
@@ -183,11 +184,11 @@ export async function runSolve() {
   if (!cfg.llm.enabled) throw new Error(`[llm] enabled = false，改 ${CONFIG_PATH} 后重试`);
   if (!cfg.llm.api_key) throw new Error(`[llm] api_key 为空，填在 ${CONFIG_PATH} 里`);
 
-  const quizzesFile = path.join(STATE, 'quizzes.json');
+  const quizzesFile = stateFile('quizzes.json');
   if (!fs.existsSync(quizzesFile)) throw new Error('缺少 state/quizzes.json，先执行 node src/quiz.mjs dump');
   const quizzes = JSON.parse(fs.readFileSync(quizzesFile, 'utf8'));
 
-  const answersFile = path.join(STATE, 'answers.json');
+  const answersFile = stateFile('answers.json');
   const answers = fs.existsSync(answersFile) ? JSON.parse(fs.readFileSync(answersFile, 'utf8')) : {};
   const bank = loadBank();
 

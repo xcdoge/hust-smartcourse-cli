@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadCourseList, switchCourse, printCourseList } from './lib/courses.mjs';
+import { stateFile } from './lib/const.mjs';
 
 import { maybeHelp } from './lib/help.mjs';
 maybeHelp('init');
@@ -20,7 +21,7 @@ const positional = args.filter((a) => !a.startsWith('-'));
 
 function currentCourseId() {
   try {
-    return JSON.parse(fs.readFileSync(path.join(STATE, 'target.json'), 'utf8')).courseId || '';
+    return JSON.parse(fs.readFileSync(stateFile('target.json'), 'utf8')).courseId || '';
   } catch {
     return '';
   }
@@ -38,7 +39,7 @@ if (first && (first.startsWith('http://') || first.startsWith('https://'))) {
     enc: q.get('enc') || '',
   };
   if (!target.courseId || !target.clazzId) throw new Error('链接里没有 courseid / clazzid');
-  fs.writeFileSync(path.join(STATE, 'target.json'), JSON.stringify(target, null, 2));
+  fs.writeFileSync(stateFile('target.json'), JSON.stringify(target, null, 2));
   console.log(`已选择课程\n  courseId = ${target.courseId}\n  clazzId  = ${target.clazzId}\n  cpi      = ${target.cpi || '-'}`);
   console.log('\n接下来: node src/course.mjs');
 } else if (first) {

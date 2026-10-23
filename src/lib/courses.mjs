@@ -2,10 +2,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { CookieJar, follow } from './http.mjs';
-import { STATE, COOKIES, SMART_ORIGIN } from './const.mjs';
+import { STATE, COOKIES, SMART_ORIGIN, stateFile} from './const.mjs';
 
-const LIST_FILE = path.join(STATE, 'courses.json');
-const TARGET_FILE = path.join(STATE, 'target.json');
+const LIST_FILE = stateFile('courses.json');
+const TARGET_FILE = stateFile('target.json');
 
 function loadJar() {
   if (!fs.existsSync(COOKIES)) throw new Error('未登录，先执行 node src/login-qr.mjs 或 node src/login-pw.mjs');
@@ -77,7 +77,7 @@ export async function switchCourse(id) {
   fs.writeFileSync(TARGET_FILE, JSON.stringify(target, null, 2));
   console.log(`已切换到 [${item.index}] ${item.name || item.courseId}`);
 
-  const snapFile = path.join(STATE, 'course.json');
+  const snapFile = stateFile('course.json');
   if (fs.existsSync(snapFile)) {
     let stale = true;
     try {

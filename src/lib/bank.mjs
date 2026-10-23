@@ -5,10 +5,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { stateFile } from './const.mjs';
 
 const ROOT = path.resolve(import.meta.dirname, '..', '..');
 const STATE = path.join(ROOT, 'state');
-const BANK_FILE = path.join(STATE, 'qbank.json');
+const BANK_FILE = stateFile('qbank.json');
 
 function stemFingerprint(stem) {
   const norm = String(stem || '')

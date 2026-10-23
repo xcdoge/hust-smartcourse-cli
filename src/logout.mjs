@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { CookieJar, follow } from './lib/http.mjs';
+import { stateFile } from './lib/const.mjs';
 
 // 不 import const.mjs —— 退出登录不应该依赖课程配置存在
 import { maybeHelp } from './lib/help.mjs';
@@ -11,7 +12,7 @@ maybeHelp('logout');
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const STATE = path.join(ROOT, 'state');
-const COOKIES = path.join(STATE, 'cookies.json');
+const COOKIES = stateFile('cookies.json');
 
 const all = process.argv.includes('--all') || process.argv.includes('-a');
 const CAS = 'https://pass.hust.edu.cn/cas';
@@ -42,7 +43,7 @@ try {
 const removed = [];
 for (const [name, p] of [
   ['cookies.json', COOKIES],
-  ['visitor.json', `${STATE}/visitor.json`],
+  ['visitor.json', `stateFile('visitor.json')`],
 ]) {
   if (remove(p)) removed.push(name);
 }
@@ -50,8 +51,8 @@ for (const [name, p] of [
 // 3. --all 连凭据一起清
 if (all) {
   for (const [name, p] of [
-    ['cred.enc.json', `${STATE}/cred.enc.json`],
-    ['cred.txt', `${STATE}/cred.txt`],
+    ['cred.enc.json', `stateFile('cred.enc.json')`],
+    ['cred.txt', `stateFile('cred.txt')`],
   ]) {
     if (remove(p)) removed.push(name);
   }

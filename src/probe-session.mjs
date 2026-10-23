@@ -2,7 +2,7 @@
 //   node src/probe-session.mjs
 import fs from 'node:fs';
 import { CookieJar, httpGet } from './lib/http.mjs';
-import { BASE, COURSE_URL, SMART_ORIGIN, COURSE_ID, CLAZZ_ID, CPI, ENC, COOKIES, STATE } from './lib/const.mjs';
+import { BASE, COURSE_URL, SMART_ORIGIN, COURSE_ID, CLAZZ_ID, CPI, ENC, COOKIES, STATE, stateFile} from './lib/const.mjs';
 
 import { maybeHelp } from './lib/help.mjs';
 maybeHelp('check');
@@ -58,6 +58,6 @@ for (const r of rows) {
 const anyOk = rows.some((r) => r.verdict === '可用');
 if (!anyOk) {
   const dump = rows.map((r) => `${r.name} ${r.status} ${r.final}`).join('\n');
-  fs.writeFileSync(`${STATE}/probe-session.log`, dump + '\n');
+  fs.writeFileSync(`stateFile('probe-session.log')`, dump + '\n');
 }
 console.log(anyOk ? '\n结论：会话可用' : '\n结论：会话不可用，需要重新抓 cookie');

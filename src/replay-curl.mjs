@@ -2,9 +2,9 @@
 //   node src/replay-curl.mjs [路径]   默认 state/req.curl.txt
 import fs from 'node:fs';
 import path from 'node:path';
-import { STATE } from './lib/const.mjs';
+import { STATE, stateFile} from './lib/const.mjs';
 
-const file = process.argv[2] || path.join(STATE, 'req.curl.txt');
+const file = process.argv[2] || stateFile('req.curl.txt');
 if (!fs.existsSync(file)) {
   console.log(`没有找到 ${file}`);
   console.log('请把浏览器里「复制为 cURL (bash)」的整段内容粘进该文件');

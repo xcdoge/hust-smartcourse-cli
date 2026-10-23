@@ -4,7 +4,7 @@
 //   node src/quiz.mjs submit --only=<index>   只交某一份
 import fs from 'node:fs';
 import { CookieJar, follow } from './lib/http.mjs';
-import { SMART_ORIGIN, COOKIES, STATE, COURSE_ID, CLAZZ_ID, CPI, requireTarget} from './lib/const.mjs';
+import { SMART_ORIGIN, COOKIES, STATE, COURSE_ID, CLAZZ_ID, CPI, requireTarget, stateFile} from './lib/const.mjs';
 import { braceMatch } from './lib/brace.mjs';
 import { parseQuiz } from './lib/quiz-parse.mjs';
 
@@ -56,8 +56,8 @@ function ensureSession() {
 let _course = null;
 function getCourse() {
   if (_course) return _course;
-  if (!fs.existsSync(`${STATE}/course.json`)) throw new Error('缺少 state/course.json，先执行 node src/course.mjs');
-  _course = JSON.parse(fs.readFileSync(`${STATE}/course.json`, 'utf8'));
+  if (!fs.existsSync(`stateFile('course.json')`)) throw new Error('缺少 state/course.json，先执行 node src/course.mjs');
+  _course = JSON.parse(fs.readFileSync(`stateFile('course.json')`, 'utf8'));
   // 快照可能是另一门课的（切课后没重抓），拿它抓题/交卷会一直 403
   const snapId = _course?.target?.courseId || '';
   if (snapId && COURSE_ID && String(snapId) !== String(COURSE_ID)) {
@@ -123,7 +123,7 @@ async function peek(idx) {
   const w = getCourse().works[Math.min(idx, getCourse().works.length - 1)];
   const kt = await ktokenOf(w.chapterId);
   const { status, text } = await getText(workUrl(w, kt, ut), `${SMART_ORIGIN}/ananas/modules/work/index.html?v=1`);
-  const f = `${STATE}/quiz-page-${idx}.html`;
+  const f = `stateFile('quiz-page-')${idx}.html`;
   fs.writeFileSync(f, text);
   console.log('HTTP', status, '写入', f, text.length, '字节 |', w.title);
 }
@@ -164,7 +164,7 @@ async function dump() {
     console.log(`${i + 1}/${works.length} ${questions.length}题 ${w.title.slice(0, 24)}`);
     await sleep(200);
   }
-  fs.writeFileSync(`${STATE}/quizzes.json`, JSON.stringify(out, null, 2));
+  fs.writeFileSync(`stateFile('quizzes.json')`, JSON.stringify(out, null, 2));
   // 可读版
   const lines = [];
   for (const q of out) {
@@ -174,15 +174,15 @@ async function dump() {
       x.options.forEach((o) => lines.push(`  ${o.value}. ${o.text}`));
     }
   }
-  fs.writeFileSync(`${STATE}/quiz-readable.txt`, lines.join('\n'));
+  fs.writeFileSync(`stateFile('quiz-readable.txt')`, lines.join('\n'));
   console.log(`\n共 ${out.length} 份未完成测验，题目总数 ${out.reduce((a, q) => a + q.questions.length, 0)}`);
   console.log('已写 state/quizzes.json / state/quiz-readable.txt');
 }
 
 // ---------------- submit ----------------
 async function submit() {
-  const quizzes = JSON.parse(fs.readFileSync(`${STATE}/quizzes.json`, 'utf8'));
-  const answersFile = `${STATE}/answers.json`;
+  const quizzes = JSON.parse(fs.readFileSync(`stateFile('quizzes.json')`, 'utf8'));
+  const answersFile = `stateFile('answers.json')`;
   if (!fs.existsSync(answersFile)) {
     console.log('缺 state/answers.json（格式：{"<index>": {"<qid>": "A"}}）');
     return;
@@ -285,7 +285,7 @@ async function submit() {
     results.push({ index: q.index, ok, filled, resp });
     await sleep(1500);
   }
-  fs.writeFileSync(`${STATE}/quiz-submit-result.json`, JSON.stringify(results, null, 2));
+  fs.writeFileSync(`stateFile('quiz-submit-result.json')`, JSON.stringify(results, null, 2));
   console.log(`\n提交 ${results.filter((r) => r.ok).length}/${results.length} 成功`);
 }
 

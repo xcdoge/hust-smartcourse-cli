@@ -125,15 +125,26 @@ hsc help play      # 等价写法
 
 ## 状态文件
 
-都在 `state/`（已被 `.gitignore` 排除）：
+都在 `state/`（已被 `.gitignore` 排除），按用途分子目录：
 
-| 文件 | 内容 |
+```
+state/
+  config.toml          全局配置
+  auth/                cookies.json  cred.enc.json  visitor.json  login-qr.png
+  course/              target.json  courses.json  course.json  scan.json
+  quiz/                quizzes.json  answers.json  qbank.json  quiz-readable.txt
+  logs/                play.log
+  captchas/            验证码样本（训练模型用）
+```
+
+| 目录 | 内容 |
 | --- | --- |
-| `target.json` | 课程参数 |
-| `cred.enc.json` | 加密凭据（或旧版明文 `cred.txt`）|
-| `cookies.json` | 登录态 |
-| `course.json` / `scan.json` | 课程结构 / 扫描结果 |
-| `quizzes.json` / `answers.json` | 题目 / 你的答案 |
+| `auth/` | 登录态、加密凭据、二维码 |
+| `course/` | 课程参数、课程列表、结构快照、扫描结果 |
+| `quiz/` | 题目、答案、题库缓存 |
+| `logs/` | 运行日志 |
+
+旧版的平铺文件会在启动时自动搬进对应子目录，不用手动处理。
 
 ## 自动答题
 

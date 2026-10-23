@@ -36,10 +36,58 @@ func initPaths() error {
 	}
 	rootDir = wd
 	stateDir = filepath.Join(wd, "state")
-	return os.MkdirAll(stateDir, 0o755)
+	if err := os.MkdirAll(stateDir, 0o755); err != nil {
+		return err
+	}
+	return migrateState()
+}
+
+// state/ 下按用途分子目录，避免十几个文件平铺在一起
+var stateLayout = map[string]string{
+	"cookies.json":      "auth",
+	"cred.enc.json":     "auth",
+	"cred.txt":          "auth",
+	"visitor.json":      "auth",
+	"login-qr.png":      "auth",
+	"target.json":       "course",
+	"courses.json":      "course",
+	"course.json":       "course",
+	"scan.json":         "course",
+	"quizzes.json":      "quiz",
+	"answers.json":      "quiz",
+	"qbank.json":        "quiz",
+	"quiz-readable.txt": "quiz",
+	"play.log":          "logs",
+	"config.toml":       "", // 全局配置留在顶层
+}
+
+// migrateState 把旧的平铺文件搬进子目录；已经在新位置的跳过
+func migrateState() error {
+	for name, sub := range stateLayout {
+		if sub == "" {
+			continue
+		}
+		oldPath := filepath.Join(stateDir, name)
+		newPath := filepath.Join(stateDir, sub, name)
+		if !fileExists(oldPath) || fileExists(newPath) {
+			continue
+		}
+		if err := os.MkdirAll(filepath.Join(stateDir, sub), 0o755); err != nil {
+			return err
+		}
+		if err := os.Rename(oldPath, newPath); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func statePath(parts ...string) string {
+	if len(parts) == 1 {
+		if sub, ok := stateLayout[parts[0]]; ok && sub != "" {
+			return filepath.Join(stateDir, sub, parts[0])
+		}
+	}
 	return filepath.Join(append([]string{stateDir}, parts...)...)
 }
 
@@ -74,6 +122,9 @@ func loadTarget() (Target, error) {
 func writeJSON(path string, v any) error {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
 	return os.WriteFile(path, b, 0o644)

@@ -6,7 +6,7 @@
 //   GET /mooc-ans/job/document?jobid=&knowledgeid=&courseid=&clazzid=&jtoken=&checkMicroTopic=true&microTopicId=&courseEngineInfo=false
 import fs from 'node:fs';
 import { CookieJar, follow } from './lib/http.mjs';
-import { SMART_ORIGIN, COOKIES, STATE, CLAZZ_ID, CPI, requireTarget} from './lib/const.mjs';
+import { SMART_ORIGIN, COOKIES, STATE, CLAZZ_ID, CPI, requireTarget, stateFile} from './lib/const.mjs';
 import { braceMatch } from './lib/brace.mjs';
 
 
@@ -19,7 +19,7 @@ const FORCE = argv.includes('--all');
 
 const jar = new CookieJar();
 jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
-const course = JSON.parse(fs.readFileSync(`${STATE}/course.json`, 'utf8'));
+const course = JSON.parse(fs.readFileSync(`stateFile('course.json')`, 'utf8'));
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const ts = () => new Date().toISOString().slice(11, 19);
@@ -27,7 +27,7 @@ const log = (...a) => {
   const line = `[${ts()}] ${a.join(' ')}`;
   console.log(line);
   try {
-    fs.appendFileSync(`${STATE}/doc.log`, line + String.fromCharCode(10));
+    fs.appendFileSync(`stateFile('doc.log')`, line + String.fromCharCode(10));
   } catch {}
 };
 
@@ -100,4 +100,4 @@ for (let i = 0; i < course.chapters.length; i++) {
 }
 
 log(`完成 ${done}，跳过(已完成) ${skipped}，失败 ${failed}`);
-fs.writeFileSync(`${STATE}/doc-result.json`, JSON.stringify(results, null, 2));
+fs.writeFileSync(`stateFile('doc-result.json')`, JSON.stringify(results, null, 2));
