@@ -15,6 +15,7 @@ func cmdInit(args []string) error {
 	t := Target{}
 
 	for _, a := range args {
+		a = trimQuotes(a)
 		if strings.HasPrefix(a, "http://") || strings.HasPrefix(a, "https://") {
 			u, err := url.Parse(a)
 			if err != nil {

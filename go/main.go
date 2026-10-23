@@ -98,7 +98,7 @@ func interactiveLoop() {
 		if line == "q" || line == "quit" || line == "exit" {
 			return
 		}
-		if err := runCommand(strings.Fields(line)); err != nil {
+		if err := runCommand(parseArgs(line)); err != nil {
 			fmt.Fprintln(os.Stderr, "hsc:", err)
 		}
 	}
