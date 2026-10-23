@@ -4,6 +4,9 @@
 import fs from 'node:fs';
 import { loadConfig, maskKey, CONFIG_PATH, DEFAULT_CONFIG_TOML } from './lib/config.mjs';
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('config');
+
 const sub = process.argv[2] || 'show';
 
 if (sub === 'init' || sub === 'reset') {

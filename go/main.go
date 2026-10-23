@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const version = "1.2.0"
+const version = "1.3.0"
 
 func usage() {
 	fmt.Print(`用法: hsc <命令> [参数]
@@ -22,19 +22,21 @@ func usage() {
   config [show|init]    查看/生成 state/config.toml
 
 课程
-  init [课程链接]        写 state/target.json，可直接带课程 URL
+  init [序号|课程链接]   列出账号下的课程，按序号选课
   course                抓取课程结构：章节、视频、文档、测验
   scan                  扫描每章全部 tab，包含练习题
 
 任务点
-  play [--all] [--speed=N] [--tick=N] [--limit=N] [--objectid=X] [--dry]
+  play [--all] [--id=N] [--speed=N] [--tick=N] [--limit=N] [--objectid=X] [--dry] [--debug]
   doc  [--all]
-  quiz <dump|solve|submit|peek> [--only=N]
+  quiz <dump|solve|submit|peek> [--id=N] [--only=N]
 
 其他
   captcha-test          用标注样本测试验证码识别准确率
   version
   q                     退出
+
+每个命令都支持 --help，例如 hsc play --help
 `)
 }
 
@@ -45,6 +47,15 @@ func runCommand(args []string) error {
 		return nil
 	}
 	cmd, rest := args[0], args[1:]
+
+	// 任何命令加 -h/--help 都打印该命令的帮助，不进业务逻辑
+	if wantsHelp(rest) {
+		if !printCommandHelp(cmd) {
+			return fmt.Errorf("unknown command %q, run hsc help", cmd)
+		}
+		return nil
+	}
+
 	switch cmd {
 	case "login-qr":
 		return cmdLoginQR(rest)
@@ -75,7 +86,16 @@ func runCommand(args []string) error {
 	case "version", "-v", "--version":
 		fmt.Printf("hsc %s\n", version)
 		return nil
-	case "help", "-h", "--help":
+	case "help":
+		// hsc help <命令> 显示单条；不带参数显示总览
+		if len(rest) > 0 && printCommandHelp(rest[0]) {
+			return nil
+		}
+		usage()
+		fmt.Println()
+		fmt.Print(helpTopics())
+		return nil
+	case "-h", "--help":
 		usage()
 		return nil
 	default:

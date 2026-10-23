@@ -9,6 +9,9 @@ import QRCode from 'qrcode';
 import { CookieJar, follow } from './lib/http.mjs';
 import { STATE, COOKIES, SMART_ORIGIN, COURSE_ID, CLAZZ_ID } from './lib/const.mjs';
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('login-qr');
+
 const CAS = 'https://pass.hust.edu.cn/cas';
 const SERVICE = 'http://smartcourse.hust.edu.cn/fyportal-smartcourse/sso/hust';
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36';

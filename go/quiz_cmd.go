@@ -9,12 +9,25 @@ import (
 func cmdQuiz(args []string) error {
 	sub := "dump"
 	only := -1
+	courseID := 0
 	for _, a := range args {
 		switch {
 		case a == "dump" || a == "submit" || a == "peek" || a == "solve":
 			sub = a
+		case strings.HasPrefix(a, "--id="):
+			courseID = atoiOr(strings.TrimPrefix(a, "--id="), 0)
 		case strings.HasPrefix(a, "--only="):
 			only = atoiOr(strings.TrimPrefix(a, "--only="), -1)
+		}
+	}
+	// --id 先切课程，后续子命令自然用新的 target
+	if courseID > 0 {
+		c := newClient(NewJar())
+		if err := loadSession(c); err != nil {
+			return err
+		}
+		if _, err := switchCourse(c, courseID); err != nil {
+			return err
 		}
 	}
 	switch sub {

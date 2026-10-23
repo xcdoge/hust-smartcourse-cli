@@ -101,6 +101,15 @@ export GOTMPDIR=$GOPATH/tmp
 
 **加一个命令**：`go/main.go` 的 `switch` 里加分支 + 写实现文件 + 在 `src/` 里补对应用法 + 更新 README 命令表。
 
+**帮助文本**：每个命令都必须支持 `-h`/`--help`。Go 侧文本集中在 `go/help.go` 的
+`commandHelp`，`hsc help <命令>` 复用同一份；Node 侧在 `src/lib/help.mjs`，
+各脚本开头调 `maybeHelp('<名字>')`。加命令时两处都要补，否则 `--help` 会落到业务逻辑里。
+
+**选课与 `--id`**：`go/courses.go` 负责课程列表（POST `/mooc-ans/visit/courselistdata?courseType=1`，
+`courseType=0` 返回空）、缓存到 `state/courses.json`、按序号写 `target.json` 并重抓结构。
+`play`/`quiz` 的 `--id=N` 走 `switchCourse`。Node 侧因为 `const.mjs` 在 import 阶段就读 target，
+`--id` 用「切换后 respawn 自身」的方式实现，不要在 import 之前改文件。
+
 **改播放逻辑**：`go/video.go` 的 `playOne`。注意三个不变量：
 判过点在 `duration - 2`；`playTime` 是毫秒；同一 dtoken 连续大跳会被限流，需要换 token 重报。
 

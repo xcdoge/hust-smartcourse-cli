@@ -9,6 +9,9 @@ import { SMART_ORIGIN, COOKIES, STATE, COURSE_ID, CLAZZ_ID, CPI, requireTarget} 
 import { braceMatch } from './lib/brace.mjs';
 
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('scan');
+
 requireTarget();
 const jar = new CookieJar();
 jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));

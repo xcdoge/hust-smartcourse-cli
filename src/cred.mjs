@@ -8,6 +8,9 @@
 import fs from 'node:fs';
 import { saveCreds, loadEncrypted, loadPlaintext, loadCreds, hasCreds, forget, migratePlaintext, CRED_FILES } from './lib/secret.mjs';
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('cred');
+
 const [cmd, ...args] = process.argv.slice(2);
 
 function status() {

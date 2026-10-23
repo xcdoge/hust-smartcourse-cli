@@ -4,6 +4,9 @@ import fs from 'node:fs';
 import { CookieJar, httpGet } from './lib/http.mjs';
 import { BASE, COURSE_URL, SMART_ORIGIN, COURSE_ID, CLAZZ_ID, CPI, ENC, COOKIES, STATE } from './lib/const.mjs';
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('check');
+
 const jar = new CookieJar();
 jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
 

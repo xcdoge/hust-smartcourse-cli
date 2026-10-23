@@ -99,6 +99,14 @@ hsc quiz peek --only=0                         # 看批阅页
 
 > 多选**连写**（`"ABD"`），判断填 `"true"/"false"`，填空填**字符串数组**（每空一项）。
 
+任何命令加 `--help` 都能看详细用法：
+
+```bash
+hsc play --help
+hsc init --help
+hsc help play      # 等价写法
+```
+
 ## 命令一览
 
 | 命令 | 说明 |
@@ -111,7 +119,7 @@ hsc quiz peek --only=0                         # 看批阅页
 | `scan` | 逐 tab 扫描，找齐所有任务点 |
 | `doc` | 文档 / 图片任务点 |
 | `play [--speed] [--tick] [--limit] [--objectid] [--dry]` | 视频进度上报 |
-| `quiz dump\|solve\|submit\|peek` | 测验抓题 / 自动答题 / 交卷 / 看批阅 |
+| `quiz dump\|solve\|submit\|peek [--id=N]` | 测验抓题 / 自动答题 / 交卷 / 看批阅 |
 | `config [show\|init]` | 查看或生成 `state/config.toml` |
 | `captcha-test` | 用标注样本验证验证码识别准确率 |
 

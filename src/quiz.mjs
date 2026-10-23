@@ -9,6 +9,21 @@ import { braceMatch } from './lib/brace.mjs';
 import { parseQuiz } from './lib/quiz-parse.mjs';
 
 
+// --id=N：先切课程再重放自身（const.mjs 在 import 时读 target，必须换进程）
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('quiz');
+
+const __idArg = process.argv.slice(2).find((a) => a.startsWith('--id='));
+if (__idArg) {
+  const { switchCourse } = await import('./lib/courses.mjs');
+  await switchCourse(Number(__idArg.slice(5)));
+  const { spawnSync } = await import('node:child_process');
+  const rest = process.argv.slice(2).filter((a) => !a.startsWith('--id='));
+  const r = spawnSync(process.execPath, [process.argv[1], ...rest], { stdio: 'inherit' });
+  process.exit(r.status ?? 0);
+}
+
+
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 export const BROWSER_HEADERS = {

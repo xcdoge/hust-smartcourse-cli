@@ -7,6 +7,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfig, maskKey, CONFIG_PATH } from './lib/config.mjs';
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('solve.mjs');
+
 const ROOT = path.resolve(import.meta.dirname, '..');
 const STATE = path.join(ROOT, 'state');
 

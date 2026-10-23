@@ -257,6 +257,7 @@ type playOpts struct {
 	ObjectID string
 	Dry      bool
 	Debug    bool
+	ID       int
 }
 
 func cmdPlay(args []string) error {
@@ -270,6 +271,8 @@ func cmdPlay(args []string) error {
 		case a == "--debug":
 			opts.Debug = true
 			debugReport = true
+		case strings.HasPrefix(a, "--id="):
+			opts.ID = atoiOr(strings.TrimPrefix(a, "--id="), 0)
 		case strings.HasPrefix(a, "--speed="):
 			opts.Speed = atofOr(strings.TrimPrefix(a, "--speed="), 1)
 		case strings.HasPrefix(a, "--tick="):
@@ -288,6 +291,11 @@ func cmdPlay(args []string) error {
 	c := newClient(NewJar())
 	if err := loadSession(c); err != nil {
 		return err
+	}
+	if opts.ID > 0 {
+		if _, err := switchCourse(c, opts.ID); err != nil {
+			return err
+		}
 	}
 	defaultReportURL = snap.ReportURL
 

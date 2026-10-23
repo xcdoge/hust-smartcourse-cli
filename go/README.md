@@ -11,7 +11,7 @@
 | `hsc cred save/show/status/forget` | 凭据加密管理（与 Node 版互相兼容） |
 | `hsc check` | 会话体检 |
 | `hsc logout [--all]` | 退出登录（清 cookie；`--all` 连凭据一起清）|
-| `hsc init [课程链接]` | 生成 `state/target.json`（可贴 URL 自动解析）|
+| `hsc init [序号\|课程链接]` | 列出账号下的课程并按序号选课 |
 | `hsc course` | 抓课程结构 |
 | `hsc scan` | 逐 tab 全量扫描（含练习题） |
 | `hsc doc` | 文档/图片任务点 |

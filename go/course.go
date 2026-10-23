@@ -175,9 +175,15 @@ func cmdCourse() error {
 	if err := loadSession(c); err != nil {
 		return err
 	}
+	_, err = crawlCourse(c, t)
+	return err
+}
+
+// crawlCourse 抓课程结构并写入 state/course.json
+func crawlCourse(c *Client, t Target) (*CourseSnapshot, error) {
 	chapters, size, err := fetchChapters(c, t)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	logf("章节列表页 %d 字节，解析出 %d 个章节", size, len(chapters))
 
@@ -248,14 +254,14 @@ func cmdCourse() error {
 		}
 	}
 	if err := writeJSON(statePath("course.json"), snap); err != nil {
-		return err
+		return nil, err
 	}
 	logf("视频 %d 个（已通过 %d 个，总时长 %.2f 小时）| 作业 %d 个",
 		len(snap.Videos), countPassed(snap.Videos), float64(total)/3600, len(snap.Works))
-	if countPassed(snap.Videos) == 0 && len(snap.Videos) == 0 {
-		return fmt.Errorf("没抓到任何视频任务点")
+	if len(snap.Videos) == 0 && len(snap.Works) == 0 {
+		return nil, fmt.Errorf("没抓到任何任务点")
 	}
-	return nil
+	return &snap, nil
 }
 
 func firstNonEmpty(vals ...string) string {

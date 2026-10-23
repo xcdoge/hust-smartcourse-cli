@@ -7,6 +7,21 @@ import { COOKIES, STATE, CLAZZ_ID, requireTarget} from './lib/const.mjs';
 import { playVideo, DEFAULT_BASE } from './lib/player.mjs';
 
 
+// --id=N：先切课程再重放自身（const.mjs 在 import 时读 target，必须换进程）
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('play');
+
+const __idArg = process.argv.slice(2).find((a) => a.startsWith('--id='));
+if (__idArg) {
+  const { switchCourse } = await import('./lib/courses.mjs');
+  await switchCourse(Number(__idArg.slice(5)));
+  const { spawnSync } = await import('node:child_process');
+  const rest = process.argv.slice(2).filter((a) => !a.startsWith('--id='));
+  const r = spawnSync(process.execPath, [process.argv[1], ...rest], { stdio: 'inherit' });
+  process.exit(r.status ?? 0);
+}
+
+
 requireTarget();
 const argv = Object.fromEntries(
   process.argv.slice(2).map((a) => {

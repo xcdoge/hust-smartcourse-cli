@@ -13,6 +13,9 @@ import { STATE, COOKIES, SMART_ORIGIN, COURSE_ID, CLAZZ_ID } from './lib/const.m
 import { recognize } from './lib/captcha.mjs';
 import { loadCreds, saveCreds } from './lib/secret.mjs';
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('login-pw');
+
 const CAS = 'https://pass.hust.edu.cn/cas';
 const SERVICE = 'http://smartcourse.hust.edu.cn/fyportal-smartcourse/sso/hust';
 const UA =

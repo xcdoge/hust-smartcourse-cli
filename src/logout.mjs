@@ -6,6 +6,9 @@ import path from 'node:path';
 import { CookieJar, follow } from './lib/http.mjs';
 
 // 不 import const.mjs —— 退出登录不应该依赖课程配置存在
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('logout');
+
 const ROOT = path.resolve(import.meta.dirname, '..');
 const STATE = path.join(ROOT, 'state');
 const COOKIES = path.join(STATE, 'cookies.json');

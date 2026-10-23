@@ -13,6 +13,9 @@ import { SMART_ORIGIN, BASE, COURSE_ID, CLAZZ_ID, CPI, COOKIES, STATE, requireTa
 import { braceMatch } from './lib/brace.mjs';
 
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('course');
+
 requireTarget();
 const OUT = path.resolve(import.meta.dirname, '..', 'probe', 'out');
 fs.mkdirSync(OUT, { recursive: true });

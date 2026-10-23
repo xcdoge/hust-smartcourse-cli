@@ -10,6 +10,9 @@ import { SMART_ORIGIN, COOKIES, STATE, CLAZZ_ID, CPI, requireTarget} from './lib
 import { braceMatch } from './lib/brace.mjs';
 
 
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('doc');
+
 requireTarget();
 const argv = process.argv.slice(2);
 const FORCE = argv.includes('--all');

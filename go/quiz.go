@@ -227,7 +227,7 @@ func cmdQuizDump() error {
 	}
 	var res ScanResult
 	if err := readJSON(statePath("scan.json"), &res); err != nil {
-		return fmt.Errorf("先跑 hsc scan: %w", err)
+		return fmt.Errorf("缺少 state/scan.json，先执行 hsc scan")
 	}
 	c := newClient(NewJar())
 	if err := loadSession(c); err != nil {
@@ -248,6 +248,7 @@ func cmdQuizDump() error {
 		kt := ktokenOf(c, t, r.Chapter, r.Page)
 		w := WorkPoint{ChapterID: r.Chapter, Title: r.Title, WorkID: r.WorkID, JobID: r.JobID, Enc: r.Enc}
 		pageURL := workPageURL(t, w, kt, ut)
+		_ = pageURL
 		_, _, body, err := c.Follow(pageURL, browserHeaders)
 		if err != nil {
 			logf("抓取失败 %s: %v", truncate(r.Title, 20), err)
@@ -261,6 +262,9 @@ func cmdQuizDump() error {
 		if strings.Contains(title, "已批阅") {
 			logf("  跳过（已批阅） %s", truncate(r.Title, 24))
 			continue
+		}
+		if os.Getenv("HSC_DUMP_QUIZ_HTML") != "" {
+			_ = os.WriteFile(statePath("quiz-raw-"+fmt.Sprint(len(quizzes))+".html"), []byte(html), 0o644)
 		}
 		qs := parseQuiz(html)
 		action := ""

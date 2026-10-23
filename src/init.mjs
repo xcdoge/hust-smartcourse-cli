@@ -1,48 +1,54 @@
-// 生成 state/target.json
-//   node src/init.mjs                     写模板，提示手动填
-//   node src/init.mjs "<课程链接>"        从 URL 自动解析
-//   node src/init.mjs --courseid=X --clazzid=Y --cpi=Z [--enc=W]
+// 选课
+//   node src/init.mjs            列出账号下所有课程
+//   node src/init.mjs <序号>      选第 N 门课
+//   node src/init.mjs "<课程链接>" 从 URL 解析参数
+//   node src/init.mjs --refresh  强制重新拉课程列表
 import fs from 'node:fs';
 import path from 'node:path';
+import { loadCourseList, switchCourse, printCourseList } from './lib/courses.mjs';
+
+import { maybeHelp } from './lib/help.mjs';
+maybeHelp('init');
 
 const ROOT = path.resolve(import.meta.dirname, '..');
 const STATE = path.join(ROOT, 'state');
 fs.mkdirSync(STATE, { recursive: true });
 
-const target = { name: '', courseId: '', clazzId: '', cpi: '', enc: '' };
+const args = process.argv.slice(2);
+const refresh = args.includes('--refresh') || args.includes('-r');
+const positional = args.filter((a) => !a.startsWith('-'));
 
-for (const a of process.argv.slice(2)) {
-  if (a.startsWith('http://') || a.startsWith('https://')) {
-    const q = new URL(a).searchParams;
-    target.courseId = q.get('courseid') || q.get('courseId') || '';
-    target.clazzId = q.get('clazzid') || q.get('clazzId') || '';
-    target.cpi = q.get('cpi') || '';
-    target.enc = q.get('enc') || '';
-    continue;
-  }
-  for (const [prefix, field] of [
-    ['--courseid=', 'courseId'],
-    ['--clazzid=', 'clazzId'],
-    ['--cpi=', 'cpi'],
-    ['--enc=', 'enc'],
-    ['--name=', 'name'],
-  ]) {
-    if (a.startsWith(prefix)) target[field] = a.slice(prefix.length);
+function currentCourseId() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(STATE, 'target.json'), 'utf8')).courseId || '';
+  } catch {
+    return '';
   }
 }
 
-fs.writeFileSync(path.join(STATE, 'target.json'), JSON.stringify(target, null, 2));
+const first = positional[0];
 
-if (!target.courseId || !target.clazzId) {
-  console.log('state/target.json 已生成，courseId / clazzId 为空\n');
-  console.log('补全方式：');
-  console.log('  node src/init.mjs "<课程链接>"');
-  console.log('  node src/init.mjs --courseid=... --clazzid=... --cpi=... --enc=...');
-  console.log('\n参数取自浏览器地址栏。');
+if (first && (first.startsWith('http://') || first.startsWith('https://'))) {
+  const q = new URL(first).searchParams;
+  const target = {
+    name: '',
+    courseId: q.get('courseid') || q.get('courseId') || '',
+    clazzId: q.get('clazzid') || q.get('clazzId') || '',
+    cpi: q.get('cpi') || '',
+    enc: q.get('enc') || '',
+  };
+  if (!target.courseId || !target.clazzId) throw new Error('链接里没有 courseid / clazzid');
+  fs.writeFileSync(path.join(STATE, 'target.json'), JSON.stringify(target, null, 2));
+  console.log(`已选择课程\n  courseId = ${target.courseId}\n  clazzId  = ${target.clazzId}\n  cpi      = ${target.cpi || '-'}`);
+  console.log('\n接下来: node src/course.mjs');
+} else if (first) {
+  const n = Number(first);
+  if (!Number.isInteger(n) || n < 1) throw new Error(`参数 ${first} 既不是序号也不是课程链接`);
+  await switchCourse(n);
+  console.log('课程已切换，接着跑: node src/course.mjs');
 } else {
-  console.log('state/target.json 已写入');
-  console.log(`  courseId = ${target.courseId}`);
-  console.log(`  clazzId  = ${target.clazzId}`);
-  console.log(`  cpi      = ${target.cpi || '(空)'}`);
-  console.log('\n下一步：node src/course.mjs  然后 node src/scan.mjs');
+  const list = await loadCourseList(refresh);
+  console.log(`共 ${list.length} 门课程\n`);
+  printCourseList(list, currentCourseId());
+  console.log('\n选课: node src/init.mjs <序号>    重新拉列表: node src/init.mjs --refresh');
 }
