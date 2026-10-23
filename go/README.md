@@ -16,7 +16,8 @@
 | `hsc scan` | 逐 tab 全量扫描（含练习题） |
 | `hsc doc` | 文档/图片任务点 |
 | `hsc play [--speed=10] [--tick=10] [--limit=N]` | 视频进度上报 |
-| `hsc quiz dump/submit/peek` | 测验抓题 / 交卷 / 看批阅 |
+| `hsc quiz dump/solve/submit/peek` | 抓题 / 自动答题 / 交卷 / 看批阅 |
+| `hsc config [show\|init]` | 查看或生成 `state/config.toml` |
 | `hsc captcha-test` | 用标注样本验证验证码识别准确率 |
 
 ## 编译

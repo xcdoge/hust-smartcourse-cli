@@ -11,7 +11,7 @@ func cmdQuiz(args []string) error {
 	only := -1
 	for _, a := range args {
 		switch {
-		case a == "dump" || a == "submit" || a == "peek":
+		case a == "dump" || a == "submit" || a == "peek" || a == "solve":
 			sub = a
 		case strings.HasPrefix(a, "--only="):
 			only = atoiOr(strings.TrimPrefix(a, "--only="), -1)
@@ -24,6 +24,8 @@ func cmdQuiz(args []string) error {
 		return cmdQuizSubmit(only)
 	case "peek":
 		return cmdQuizPeek(only)
+	case "solve":
+		return cmdQuizSolve(args)
 	}
 	return fmt.Errorf("未知 quiz 子命令: %s", sub)
 }

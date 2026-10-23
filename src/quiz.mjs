@@ -9,7 +9,6 @@ import { braceMatch } from './lib/brace.mjs';
 import { parseQuiz } from './lib/quiz-parse.mjs';
 
 
-requireTarget();
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 export const BROWSER_HEADERS = {
@@ -30,9 +29,22 @@ const argv = Object.fromEntries(
 );
 const mode = process.argv[2];
 
+// 登录态与课程快照按需加载：solve 不需要它们，import 时不该因为文件缺失而崩
 const jar = new CookieJar();
-jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
-const course = JSON.parse(fs.readFileSync(`${STATE}/course.json`, 'utf8'));
+let _loaded = false;
+function ensureSession() {
+  if (_loaded) return;
+  if (!fs.existsSync(COOKIES)) throw new Error('未登录，先执行 node src/login-qr.mjs 或 node src/login-pw.mjs');
+  jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
+  _loaded = true;
+}
+let _course = null;
+function getCourse() {
+  if (_course) return _course;
+  if (!fs.existsSync(`${STATE}/course.json`)) throw new Error('缺少 state/course.json，先执行 node src/course.mjs');
+  _course = JSON.parse(fs.readFileSync(`${STATE}/course.json`, 'utf8'));
+  return _course;
+}
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function abs(url) {
@@ -62,17 +74,17 @@ function margOf(html) {
 
 async function ktokenOf(chapterId) {
   const url =
-    `${SMART_ORIGIN}/mooc-ans/knowledge/cards?clazzid=${CLAZZ_ID}&courseid=${course.courseId}` +
+    `${SMART_ORIGIN}/mooc-ans/knowledge/cards?clazzid=${CLAZZ_ID}&courseid=${getCourse().courseId}` +
     `&knowledgeid=${chapterId}&num=0&ut=s&cpi=${CPI}&v=2025-0424-1038-4&mooc2=1&isMicroCourse=false&editorPreview=0&crossId=`;
   const { text } = await getText(url);
   return margOf(text)?.defaults?.ktoken || '';
 }
 
 async function utEnc() {
-  const ch = course.chapters[0];
+  const ch = getCourse().chapters[0];
   const url =
-    `${SMART_ORIGIN}/mycourse/studentstudy?chapterId=${ch.knowledgeId}&courseId=${course.courseId}` +
-    `&clazzid=${CLAZZ_ID}&cpi=${CPI}&enc=${course.studyEnc}&mooc2=1&hidetype=0`;
+    `${SMART_ORIGIN}/mycourse/studentstudy?chapterId=${ch.knowledgeId}&courseId=${getCourse().courseId}` +
+    `&clazzid=${CLAZZ_ID}&cpi=${CPI}&enc=${getCourse().studyEnc}&mooc2=1&hidetype=0`;
   const { text } = await getText(url);
   return (text.match(/utEnc\s*=\s*"([0-9a-f]{32})"/) || [])[1] || '';
 }
@@ -81,14 +93,14 @@ function workUrl(w, ktoken, ut) {
   const q =
     'api=1&workId=' + w.workId + '&jobid=' + encodeURIComponent(w.jobid) + '&originJobId=' + encodeURIComponent(w.jobid) +
     '&needRedirect=true&skipHeader=true&knowledgeid=' + w.chapterId + '&ktoken=' + ktoken + '&cpi=' + CPI +
-    '&ut=s&clazzId=' + CLAZZ_ID + '&type=&enc=' + w.enc + '&utenc=' + ut + '&mooc2=1&courseid=' + course.courseId;
+    '&ut=s&clazzId=' + CLAZZ_ID + '&type=&enc=' + w.enc + '&utenc=' + ut + '&mooc2=1&courseid=' + getCourse().courseId;
   return `${SMART_ORIGIN}/mooc-ans/api/work?${q}`;
 }
 
 // ---------------- dump ----------------
 async function peek(idx) {
   const ut = await utEnc();
-  const w = course.works[Math.min(idx, course.works.length - 1)];
+  const w = getCourse().works[Math.min(idx, getCourse().works.length - 1)];
   const kt = await ktokenOf(w.chapterId);
   const { status, text } = await getText(workUrl(w, kt, ut), `${SMART_ORIGIN}/ananas/modules/work/index.html?v=1`);
   const f = `${STATE}/quiz-page-${idx}.html`;
@@ -99,7 +111,7 @@ async function peek(idx) {
 async function dump() {
   const ut = await utEnc();
   console.log('utEnc =', ut ? ut.slice(0, 8) + '…' : '(未拿到)');
-  const works = course.works || [];
+  const works = getCourse().works || [];
   const out = [];
   for (let i = 0; i < works.length; i++) {
     const w = works[i];
@@ -166,7 +178,7 @@ async function submit() {
     let vEnc = '';
     try {
       const vu =
-        `${SMART_ORIGIN}/mooc-ans/work/validate?classId=${CLAZZ_ID}&courseId=${course.courseId}` +
+        `${SMART_ORIGIN}/mooc-ans/work/validate?classId=${CLAZZ_ID}&courseId=${getCourse().courseId}` +
         `&knowledgeId=${q.work.chapterId}&cpi=${CPI}`;
       const vr = await fetch(vu, {
         headers: { ...BROWSER_HEADERS, cookie: jar.header(vu), referer: q.pageUrl, 'x-requested-with': 'XMLHttpRequest' },
@@ -243,8 +255,16 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 const isMain = process.argv[1] && pathToFileURL(process.argv[1]).href === import.meta.url;
 if (isMain) {
-  if (mode === 'dump') await dump();
-  else if (mode === 'submit') await submit();
-  else if (mode === 'peek') await peek(Number(argv.only || 0));
-  else console.log('用法: node src/quiz.mjs dump | submit [--only=N] | peek --only=N');
+  if (mode === 'dump') { requireTarget(); ensureSession(); await dump(); }
+  else if (mode === 'submit') { requireTarget(); ensureSession(); await submit(); }
+  else if (mode === 'peek') { requireTarget(); ensureSession(); await peek(Number(argv.only || 0)); }
+  else if (mode === 'solve') {
+    const { runSolve } = await import('./solve.mjs');
+    try {
+      await runSolve();
+    } catch (e) {
+      console.error('hsc:', e.message || e);
+      process.exit(1);
+    }
+  } else console.log('用法: node src/quiz.mjs dump | solve | submit [--only=N] | peek --only=N');
 }

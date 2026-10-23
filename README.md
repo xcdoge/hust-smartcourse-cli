@@ -111,7 +111,8 @@ hsc quiz peek --only=0                         # 看批阅页
 | `scan` | 逐 tab 扫描，找齐所有任务点 |
 | `doc` | 文档 / 图片任务点 |
 | `play [--speed] [--tick] [--limit] [--objectid] [--dry]` | 视频进度上报 |
-| `quiz dump\|submit\|peek` | 测验抓题 / 交卷 / 看批阅 |
+| `quiz dump\|solve\|submit\|peek` | 测验抓题 / 自动答题 / 交卷 / 看批阅 |
+| `config [show\|init]` | 查看或生成 `state/config.toml` |
 | `captcha-test` | 用标注样本验证验证码识别准确率 |
 
 ## 状态文件
@@ -125,6 +126,34 @@ hsc quiz peek --only=0                         # 看批阅页
 | `cookies.json` | 登录态 |
 | `course.json` / `scan.json` | 课程结构 / 扫描结果 |
 | `quizzes.json` / `answers.json` | 题目 / 你的答案 |
+
+## 自动答题
+
+答题交给自己配的模型，配置文件由程序自动生成：`state/config.toml`（首次运行任何命令都会创建）。
+
+```toml
+[llm]
+enabled = true                         # 改成 true 才生效
+base_url = "https://api.openai.com/v1" # 兼容 OpenAI 的接口都行
+api_key = "sk-..."
+model = "gpt-4o-mini"
+temperature = 0.2
+
+[quiz]
+auto_submit = false                    # solve 完是否直接交卷
+types = ["choice", "multi", "judge", "fill"]  # 参与作答的题型
+delay_ms = 300
+retries = 2
+```
+
+```bash
+hsc config            # 查看当前配置（api_key 打码）
+hsc quiz solve        # 自动作答，写入 state/answers.json
+hsc quiz submit       # 检查后交卷
+```
+
+简答题默认不答（`types` 里没有 `essay`）——这类题要人工批改，答了也拿不到分。
+答案会合并进已有的 `answers.json`，不会覆盖你手写的部分。
 
 ## 三个关键实现点
 

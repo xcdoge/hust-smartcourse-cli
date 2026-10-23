@@ -35,8 +35,8 @@ export const COURSE_URL =
 /** 需要课程配置的脚本在开头调这个 */
 export function requireTarget() {
   if (HAS_TARGET) return TARGET;
-  console.error(`缺少课程配置：${targetFile}`);
-  console.error('请复制 config/target.example.json 到 state/target.json 并填入 courseId / clazzId');
+
+  console.error('未配置课程，先执行: node src/init.mjs "<课程链接>"');
   process.exit(2);
 }
 

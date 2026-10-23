@@ -19,6 +19,7 @@ func usage() {
   check                 检查当前会话是否有效
   logout [--all]        清除登录态；--all 同时删除已存凭据
   cred <save|show|status|forget>
+  config [show|init]    查看/生成 state/config.toml
 
 课程
   init [课程链接]        写 state/target.json，可直接带课程 URL
@@ -28,7 +29,7 @@ func usage() {
 任务点
   play [--all] [--speed=N] [--tick=N] [--limit=N] [--objectid=X] [--dry]
   doc  [--all]
-  quiz <dump|submit|peek> [--only=N]
+  quiz <dump|solve|submit|peek> [--only=N]
 
 其他
   captcha-test          用标注样本测试验证码识别准确率
@@ -55,6 +56,8 @@ func runCommand(args []string) error {
 		return cmdLogout(rest)
 	case "cred":
 		return cmdCred(rest)
+	case "config":
+		return cmdConfig(rest)
 	case "init":
 		return cmdInit(rest)
 	case "course":

@@ -145,7 +145,7 @@ func parseQuiz(html string) []Question {
 			case strings.Contains(typeLabel, "判断"):
 				qtype = 3
 			case strings.Contains(typeLabel, "填空"):
-				qtype = 4
+				qtype = 2 // 平台的题型码：2=填空，不是 4
 			}
 		}
 		blanks := len(reBlank.FindAllStringSubmatch(h, -1))
@@ -299,8 +299,9 @@ func cmdQuizDump() error {
 	return nil
 }
 
-// Answer 支持字符串或字符串数组
-type Answer json.RawMessage
+// Answer 支持字符串、布尔或字符串数组。
+// 必须用别名（=）而不是定义类型，否则 encoding/json 会当成 []byte 处理成 base64。
+type Answer = json.RawMessage
 
 func answerAsString(a Answer) (string, []string) {
 	var s string
