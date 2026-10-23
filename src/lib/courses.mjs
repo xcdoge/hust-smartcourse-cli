@@ -110,13 +110,12 @@ export function printCourseList(list, currentCourseId = '') {
   const nameW = Math.min(40, Math.max(8, ...list.map((x) => width(x.name))));
   const teacherW = Math.min(16, Math.max(6, ...list.map((x) => width(x.teacher))));
 
-  console.log(`${pad('序号', 6)}${pad('课程', nameW + 2)}${pad('教师', teacherW + 2)}状态`);
+  console.log(`${pad('序号', 6)}${pad('课程', nameW + 2)}${pad('教师', teacherW + 2)}状态`.trimEnd());
   for (const it of list) {
-    console.log(
-      `${pad(String(it.index), 6)}${pad(it.name || `(未命名 ${it.courseId})`, nameW + 2)}${pad(it.teacher, teacherW + 2)}${
-        it.courseId === currentCourseId ? '← 当前' : ''
-      }`,
-    );
+    const line =
+      `${pad(String(it.index), 6)}${pad(it.name || `(未命名 ${it.courseId})`, nameW + 2)}${pad(it.teacher, teacherW + 2)}` +
+      (it.courseId === currentCourseId ? '← 当前' : '');
+    console.log(line.trimEnd());
   }
 }
 

@@ -47,7 +47,9 @@ if (first && (first.startsWith('http://') || first.startsWith('https://'))) {
   await switchCourse(n);
   console.log('课程已切换，接着跑: node src/course.mjs');
 } else {
-  const list = await loadCourseList(refresh);
+  // 现拉：缓存顺序可能过期，紧接着选课会刷新，两边不一致就会切错课
+  const list = await loadCourseList(true);
+  void refresh;
   console.log(`共 ${list.length} 门课程\n`);
   printCourseList(list, currentCourseId());
   console.log('\n选课: node src/init.mjs <序号>    重新拉列表: node src/init.mjs --refresh');

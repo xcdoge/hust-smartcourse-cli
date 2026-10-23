@@ -58,10 +58,13 @@ func cmdInit(args []string) error {
 	if !hasSession {
 		return fmt.Errorf("未登录，先执行 hsc login-qr 或 hsc login-pw")
 	}
-	list, err := loadCourseList(c, refresh)
+	// 列表一定要现拉：缓存里的顺序可能已经变了（退课/加课），
+	// 而紧接着的 `init <序号>` 会刷新，两边不一致就会切错课
+	list, err := loadCourseList(c, true)
 	if err != nil {
 		return err
 	}
+	_ = refresh
 	cur, _ := loadTargetIfExists()
 	fmt.Printf("共 %d 门课程\n\n", len(list))
 	printCourseList(list, cur)

@@ -156,29 +156,94 @@ func switchCourse(c *Client, id int) (Target, error) {
 	return t, nil
 }
 
-// printCourseList 打印课程列表
+// printCourseList 打印课程列表（按显示宽度对齐，中文算两格）
 func printCourseList(list []CourseItem, current Target) {
-	fmt.Printf("%-3s %-34s %-10s %s\n", "序号", "课程", "教师", "状态")
+	nameW, teacherW := 8, 6
 	for _, it := range list {
-		mark := ""
-		if it.CourseID == current.CourseID {
-			mark = "← 当前"
+		if w := displayWidth(it.Name); w > nameW {
+			nameW = w
 		}
+		if w := displayWidth(it.Teacher); w > teacherW {
+			teacherW = w
+		}
+	}
+	if nameW > 40 {
+		nameW = 40
+	}
+	if teacherW > 16 {
+		teacherW = 16
+	}
+
+	hdr := padDisplay("序号", 6) + padDisplay("课程", nameW+2) + padDisplay("教师", teacherW+2) + "状态"
+	fmt.Println(strings.TrimRight(hdr, " "))
+
+	for _, it := range list {
 		name := it.Name
 		if name == "" {
 			name = "(未命名 " + it.CourseID + ")"
 		}
-		fmt.Printf("%-3d %-34s %-10s %s\n", it.Index, truncatePad(name, 34), truncatePad(it.Teacher, 10), mark)
+		line := padDisplay(fmt.Sprint(it.Index), 6) +
+			padDisplay(trimDisplay(name, nameW), nameW+2) +
+			padDisplay(trimDisplay(it.Teacher, teacherW), teacherW+2)
+		if it.CourseID == current.CourseID {
+			line += "← 当前"
+		}
+		fmt.Println(strings.TrimRight(line, " "))
 	}
 }
 
-func truncatePad(s string, n int) string {
-	r := []rune(s)
-	if len(r) > n {
-		return string(r[:n-1]) + "…"
+// displayWidth 估算终端显示宽度：CJK / 全角算 2
+func displayWidth(s string) int {
+	w := 0
+	for _, r := range s {
+		if isWideRune(r) {
+			w += 2
+		} else {
+			w++
+		}
 	}
-	for len([]rune(s)) < n {
-		s += " "
+	return w
+}
+
+func isWideRune(r rune) bool {
+	switch {
+	case r >= 0x1100 && r <= 0x115F,
+		r >= 0x2E80 && r <= 0xA4CF,
+		r >= 0xAC00 && r <= 0xD7A3,
+		r >= 0xF900 && r <= 0xFAFF,
+		r >= 0xFE30 && r <= 0xFE6F,
+		r >= 0xFF00 && r <= 0xFF60,
+		r >= 0xFFE0 && r <= 0xFFE6:
+		return true
+	}
+	return false
+}
+
+// trimDisplay 按显示宽度截断，超长补省略号
+func trimDisplay(s string, width int) string {
+	if displayWidth(s) <= width {
+		return s
+	}
+	var b strings.Builder
+	w := 0
+	for _, r := range s {
+		rw := 1
+		if isWideRune(r) {
+			rw = 2
+		}
+		if w+rw > width-1 {
+			break
+		}
+		b.WriteRune(r)
+		w += rw
+	}
+	return b.String() + "…"
+}
+
+// padDisplay 右侧补空格到指定显示宽度
+func padDisplay(s string, width int) string {
+	if w := displayWidth(s); w < width {
+		return s + strings.Repeat(" ", width-w)
 	}
 	return s
 }
