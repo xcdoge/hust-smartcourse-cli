@@ -46,7 +46,12 @@ func cmdScan() error {
 	logf("章节 %d 个", len(chapters))
 
 	res := ScanResult{Chapters: len(chapters), Types: map[string]int{}}
-	for i, ch := range chapters {
+
+	// 并发扫每个章节的所有 tab（原来串行 6.6 秒）
+	perChapter := make([][]ScanRow, len(chapters))
+	parallelEach(len(chapters), 8, func(i int) {
+		ch := chapters[i]
+		var rows []ScanRow
 		for num := 0; num < 4; num++ {
 			m, err := fetchCards(c, t, ch.KnowledgeID, num)
 			if err != nil {
@@ -54,9 +59,7 @@ func cmdScan() error {
 			}
 			for _, a := range m.Attachments {
 				mod := a.Property.Module
-				key := mod + "/" + a.Type
-				res.Types[key]++
-				res.Rows = append(res.Rows, ScanRow{
+				rows = append(rows, ScanRow{
 					Chapter:     ch.KnowledgeID,
 					Page:        num,
 					Module:      mod,
@@ -73,10 +76,15 @@ func cmdScan() error {
 				})
 			}
 		}
-		if (i+1)%20 == 0 {
-			logf("  已扫 %d/%d", i+1, len(chapters))
+		perChapter[i] = rows
+	})
+	for _, rows := range perChapter {
+		for _, r := range rows {
+			res.Types[r.Module+"/"+r.Type]++
+			res.Rows = append(res.Rows, r)
 		}
 	}
+
 	if err := writeJSON(statePath("scan.json"), res); err != nil {
 		return err
 	}

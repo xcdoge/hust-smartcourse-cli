@@ -182,18 +182,27 @@ func cmdCourse() error {
 	logf("章节列表页 %d 字节，解析出 %d 个章节", size, len(chapters))
 
 	snap := CourseSnapshot{Target: t, Chapters: chapters}
-	for i, ch := range chapters {
+
+	// 并发抓每章卡片（原来串行，154 章要 3.6 秒）
+	type chapterResult struct {
+		reportURL string
+		videos    []VideoPoint
+		works     []WorkPoint
+	}
+	results := make([]chapterResult, len(chapters))
+	const workers = 8
+	parallelEach(len(chapters), workers, func(i int) {
+		ch := chapters[i]
 		m, err := fetchCards(c, t, ch.KnowledgeID, 0)
 		if err != nil {
 			if i < 3 {
 				logf("  章节 %s 抓取失败: %v", ch.KnowledgeID, err)
 			}
-			continue
+			return
 		}
-		if snap.ReportURL == "" {
-			if v, ok := m.Defaults["reportUrl"].(string); ok && v != "" {
-				snap.ReportURL = v
-			}
+		r := chapterResult{}
+		if v, ok := m.Defaults["reportUrl"].(string); ok && v != "" {
+			r.reportURL = v
 		}
 		for _, a := range m.Attachments {
 			mod := a.Property.Module
@@ -203,7 +212,7 @@ func cmdCourse() error {
 				if oid == "" {
 					continue
 				}
-				snap.Videos = append(snap.Videos, VideoPoint{
+				r.videos = append(r.videos, VideoPoint{
 					ChapterID: ch.KnowledgeID, Title: firstNonEmpty(a.Property.Name, a.Property.Title),
 					ObjectID: oid, JobID: a.JobID, OtherInfo: a.OtherInfo,
 					AttDuration: a.AttDuration, AttDurationEnc: a.AttDurationEnc,
@@ -211,17 +220,25 @@ func cmdCourse() error {
 					IsPassed:            a.IsPassed, PlayTime: a.PlayTime,
 				})
 			case a.Type == "workid" || a.Type == "work" || mod == "work":
-				snap.Works = append(snap.Works, WorkPoint{
+				r.works = append(r.works, WorkPoint{
 					ChapterID: ch.KnowledgeID, Page: 0, Title: a.Property.Title,
 					WorkID: firstNonEmpty(a.Property.WorkID, a.Property.WorkIDAlt),
 					JobID:  a.JobID, Enc: a.Enc, WorkType: a.Property.WorkType,
 				})
 			}
 		}
-		if (i+1)%20 == 0 {
-			logf("  已抓 %d/%d", i+1, len(chapters))
+		results[i] = r
+	})
+
+	// 按章节顺序汇总，保证输出稳定
+	for _, r := range results {
+		if snap.ReportURL == "" && r.reportURL != "" {
+			snap.ReportURL = r.reportURL
 		}
+		snap.Videos = append(snap.Videos, r.videos...)
+		snap.Works = append(snap.Works, r.works...)
 	}
+
 	passed := 0
 	total := 0
 	for _, v := range snap.Videos {
