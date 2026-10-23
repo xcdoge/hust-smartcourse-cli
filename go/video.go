@@ -59,6 +59,8 @@ func courseRT(otherInfo string) float64 {
 }
 
 // report 上报一次播放进度
+var debugReport bool
+
 func report(c *Client, t Target, v VideoPoint, st *videoStatus, playingTime, clipTime float64, rt float64) (bool, error) {
 	playingMs := int64(math.Round(playingTime * 1000))
 	durMs := int64(math.Round(st.Duration * 1000))
@@ -108,6 +110,9 @@ func report(c *Client, t Target, v VideoPoint, st *videoStatus, playingTime, cli
 		IsPassed bool `json:"isPassed"`
 	}
 	_ = json.Unmarshal(body, &out)
+	if debugReport {
+		logf("  返回 %s", truncate(string(body), 200))
+	}
 	return out.IsPassed, nil
 }
 
@@ -264,6 +269,7 @@ func cmdPlay(args []string) error {
 			opts.Dry = true
 		case a == "--debug":
 			opts.Debug = true
+			debugReport = true
 		case strings.HasPrefix(a, "--speed="):
 			opts.Speed = atofOr(strings.TrimPrefix(a, "--speed="), 1)
 		case strings.HasPrefix(a, "--tick="):
