@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -143,14 +144,18 @@ func playTimeSeconds(v VideoPoint) float64 {
 // playOne 把一个视频刷到通过
 func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, dry bool, debug bool) error {
 	// 先拉一次最新参数：otherInfo/attDurationEnc/playTime 都可能已经变了
-	if fresh, err := refreshedVideo(c, t, v); err == nil {
-		if fresh.PlayTime != v.PlayTime || fresh.OtherInfo != v.OtherInfo {
-			logf("  参数已更新 playTime %.0f -> %.0f", v.PlayTime, fresh.PlayTime)
-		}
-		v = fresh
-		if v.IsPassed {
-			logf("  服务端标记已通过，跳过")
-			return nil
+	// HSC_SKIP_REFRESH=1 可跳过（仅用于调试/测试）
+	skipRefresh := os.Getenv("HSC_SKIP_REFRESH") != ""
+	if !skipRefresh {
+		if fresh, err := refreshedVideo(c, t, v); err == nil {
+			if fresh.PlayTime != v.PlayTime || fresh.OtherInfo != v.OtherInfo {
+				logf("  参数已更新 playTime %.0f -> %.0f", v.PlayTime, fresh.PlayTime)
+			}
+			v = fresh
+			if v.IsPassed {
+				logf("  服务端标记已通过，跳过")
+				return nil
+			}
 		}
 	}
 	st, err := videoMeta(c, v)
@@ -176,7 +181,15 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 		return nil
 	}
 
-	step := math.Max(speed*tickSec, 20)
+	// 每次上报推进 speed*tick 秒，两次上报之间等 tick 秒——这样倍速才和真实节奏成比例。
+	// 循环里不 sleep 的话，服务端会看到「1 秒内前进几百秒」，直接判刷量。
+	if tickSec <= 0 {
+		tickSec = 10
+	}
+	step := speed * tickSec
+	if step <= 0 {
+		step = tickSec
+	}
 	played := playTimeSeconds(v)
 	if played < 0 {
 		played = 0
@@ -211,7 +224,7 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 			logf("  补报通过 %.0f%%", pct*100)
 			return nil
 		}
-		sleepSec(0.3)
+		sleepSec(math.Max(tickSec/2, 1))
 	}
 	// 换 token 再报几次
 	for i := 0; i < 4; i++ {

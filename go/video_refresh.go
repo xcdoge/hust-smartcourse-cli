@@ -47,7 +47,7 @@ func refreshedVideo(c *Client, t Target, v VideoPoint) (VideoPoint, error) {
 // describeReport 把一次上报的关键参数拼成一行，便于排查
 func describeReport(c *Client, t Target, v VideoPoint, playingTime, rt float64) string {
 	uid := c.Jar.UID()
-	return fmt.Sprintf("uid=%s rt=%.2f objectId=%s jobid=%s play=%.0f otherInfo=%s",
+	return fmt.Sprintf("uid=%s rt=%.2f objectId=%s jobid=%s 起始=%.0fs/%ds otherInfo=%s",
 		firstNonEmpty(uid, "(空)"), rt, truncate(v.ObjectID, 12), truncate(v.JobID, 14),
-		playingTime, truncate(v.OtherInfo, 60))
+		playTimeSeconds(v), v.AttDuration, truncate(v.OtherInfo, 48))
 }

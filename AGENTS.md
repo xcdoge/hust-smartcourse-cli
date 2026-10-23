@@ -121,6 +121,8 @@ export GOTMPDIR=$GOPATH/tmp
 6. **Go 1.24+ 拒绝 512 位 RSA**，CAS 发的正是 512 位，见 `go/rsa512.go` 的手写填充。
 7. **填空的 `answertype` 沿用页面隐藏域**（2），不要用自己推断的题型码覆盖。
 8. **`type Answer` 必须是别名 `= json.RawMessage`**，定义类型会被编码成 base64。
+9. **上报循环必须按 tick 间隔 sleep**。一口气把进度推到底，服务端看到「1 秒内前进几百秒」
+   会全部拒绝，表现为所有 `isPassed=false`。步长是 `speed*tick`，间隔是 `tick` 秒。
 
 ## 提交与发布
 
