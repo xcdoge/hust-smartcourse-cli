@@ -4,6 +4,10 @@ import { CookieJar, follow } from './http.mjs';
 import { COOKIES, BASE, COURSE_ID, CLAZZ_ID } from './const.mjs';
 
 export async function verify(jar) {
+  // 还没配课程时跳过验证（登录/退出登录不需要课程配置）
+  if (!COURSE_ID || !CLAZZ_ID) {
+    return { ok: true, url: '', status: 0, len: 0, chapters: 0, reason: '未配置课程，跳过验证', html: '' };
+  }
   const url = `${BASE}/mooc2-ans/mycourse/studentcourse?courseid=${COURSE_ID}&clazzid=${CLAZZ_ID}`;
   const { res, url: finalUrl } = await follow(url, jar);
   let html = '';

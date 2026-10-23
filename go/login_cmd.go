@@ -20,21 +20,29 @@ func newLoggedClient() *Client {
 	return newClient(NewJar())
 }
 
-// finishLogin 换票 + 验证 + 保存 cookie
+// finishLogin 换票 + 保存 cookie（有课程配置时顺带验证章节页）
 func finishLogin(c *Client, t Target) error {
 	status, err := exchangeTicket(c)
-	if err != nil {
-		return err
-	}
-	chapters, size, err := verifySite(c, t)
 	if err != nil {
 		return err
 	}
 	if err := c.Jar.Save(); err != nil {
 		return err
 	}
-	fmt.Printf("✔ 登录成功 | 换票 %s | 章节页 %d 字节 / %d 个章节 | cookie 已写 state/cookies.json\n",
-		truncate(status, 60), size, chapters)
+	fmt.Printf("✔ 登录成功 | 换票 %s | cookie 已写 state/cookies.json\n", truncate(status, 60))
+
+	// 没有课程配置时，登录到此为止（选课是下一步的事）
+	if t.CourseID == "" {
+		fmt.Println("\n下一步：复制 config/target.example.json 到 state/target.json 填入课程参数，")
+		fmt.Println("        然后跑 hsc course / hsc scan")
+		return nil
+	}
+
+	chapters, size, err := verifySite(c, t)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("章节页 %d 字节 / %d 个章节\n", size, chapters)
 	if chapters == 0 {
 		return fmt.Errorf("章节页没解析到章节，可能课程参数不对")
 	}
@@ -43,10 +51,7 @@ func finishLogin(c *Client, t Target) error {
 
 // cmdLoginPw 账密登录（自动识别验证码 + 重试）
 func cmdLoginPw(args []string) error {
-	t, err := loadTarget()
-	if err != nil {
-		return err
-	}
+	t, _ := loadTargetIfExists()
 	creds, err := loadCreds()
 	if err != nil {
 		return err
@@ -141,10 +146,7 @@ func cmdLoginPw(args []string) error {
 
 // cmdLoginQR 扫码登录
 func cmdLoginQR(args []string) error {
-	t, err := loadTarget()
-	if err != nil {
-		return err
-	}
+	t, _ := loadTargetIfExists()
 	buf := make([]byte, 16)
 	if _, err := rand.Read(buf); err != nil {
 		return err

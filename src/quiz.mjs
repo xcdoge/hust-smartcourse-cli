@@ -4,10 +4,12 @@
 //   node src/quiz.mjs submit --only=<index>   只交某一份
 import fs from 'node:fs';
 import { CookieJar, follow } from './lib/http.mjs';
-import { SMART_ORIGIN, COOKIES, STATE, CLAZZ_ID, CPI } from './lib/const.mjs';
+import { SMART_ORIGIN, COOKIES, STATE, CLAZZ_ID, CPI, requireTarget} from './lib/const.mjs';
 import { braceMatch } from './lib/brace.mjs';
 import { parseQuiz } from './lib/quiz-parse.mjs';
 
+
+requireTarget();
 const UA =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36';
 export const BROWSER_HEADERS = {

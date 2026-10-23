@@ -62,6 +62,8 @@ Node 版对应命令是 `node src/login-qr.mjs` / `node src/login-pw.mjs`，其�
 
 ### 2. 配置课程
 
+> 登录和配置是两步，**先登录再填课程也行**——没配置时会提示下一步该做什么。
+
 ```bash
 cp config/target.example.json state/target.json
 ```

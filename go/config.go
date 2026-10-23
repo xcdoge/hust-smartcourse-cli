@@ -47,6 +47,15 @@ func dataPath(parts ...string) string {
 	return filepath.Join(append([]string{rootDir, "data"}, parts...)...)
 }
 
+// loadTargetIfExists 允许没有 target.json（登录阶段不需要课程配置）
+func loadTargetIfExists() (Target, bool) {
+	t, err := loadTarget()
+	if err != nil {
+		return Target{}, false
+	}
+	return t, true
+}
+
 func loadTarget() (Target, error) {
 	var t Target
 	b, err := os.ReadFile(statePath("target.json"))

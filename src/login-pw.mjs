@@ -166,7 +166,12 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   const sso = await exchange(jar);
   const site = await verifySite(jar);
   fs.writeFileSync(COOKIES, JSON.stringify(jar.toJSON(), null, 2));
-  console.log(`✔ 登录成功 | 换票 ${sso.res.status} | 章节 ${site.chapters} | cookie 已写 ${COOKIES}`);
+  if (site.chapters > 0) {
+    console.log(`✔ 登录成功 | 换票 ${sso.res.status} | 章节 ${site.chapters} | cookie 已写 ${COOKIES}`);
+  } else {
+    console.log(`✔ 登录成功 | cookie 已写 ${COOKIES}`);
+    console.log('  下一步：复制 config/target.example.json 到 state/target.json 填入课程参数，再跑 course / scan');
+  }
   if (wantSave) {
     const c = loadCreds();
     const f = saveCreds(c.username, c.password);

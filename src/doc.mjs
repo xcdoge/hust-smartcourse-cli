@@ -6,9 +6,11 @@
 //   GET /mooc-ans/job/document?jobid=&knowledgeid=&courseid=&clazzid=&jtoken=&checkMicroTopic=true&microTopicId=&courseEngineInfo=false
 import fs from 'node:fs';
 import { CookieJar, follow } from './lib/http.mjs';
-import { SMART_ORIGIN, COOKIES, STATE, CLAZZ_ID, CPI } from './lib/const.mjs';
+import { SMART_ORIGIN, COOKIES, STATE, CLAZZ_ID, CPI, requireTarget} from './lib/const.mjs';
 import { braceMatch } from './lib/brace.mjs';
 
+
+requireTarget();
 const argv = process.argv.slice(2);
 const FORCE = argv.includes('--all');
 

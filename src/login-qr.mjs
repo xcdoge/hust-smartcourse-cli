@@ -84,4 +84,5 @@ log('超星章节页:', r3.res.status, html.length, '字节 | 章节', chapters)
 
 fs.writeFileSync(COOKIES, JSON.stringify(jar.toJSON(), null, 2));
 log('cookie 已写', COOKIES, '共', Object.keys(jar.toJSON()).length, '个域');
+if (chapters === 0) log('下一步：填好 state/target.json 后再跑 course / scan');
 process.exit(chapters > 0 ? 0 : 2);

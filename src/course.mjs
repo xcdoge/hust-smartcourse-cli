@@ -9,9 +9,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { CookieJar, follow } from './lib/http.mjs';
-import { SMART_ORIGIN, BASE, COURSE_ID, CLAZZ_ID, CPI, COOKIES, STATE } from './lib/const.mjs';
+import { SMART_ORIGIN, BASE, COURSE_ID, CLAZZ_ID, CPI, COOKIES, STATE, requireTarget} from './lib/const.mjs';
 import { braceMatch } from './lib/brace.mjs';
 
+
+requireTarget();
 const OUT = path.resolve(import.meta.dirname, '..', 'probe', 'out');
 fs.mkdirSync(OUT, { recursive: true });
 

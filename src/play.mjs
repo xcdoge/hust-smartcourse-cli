@@ -3,9 +3,11 @@
 //   node src/play.mjs --all [--speed=1.5]
 import fs from 'node:fs';
 import { CookieJar } from './lib/http.mjs';
-import { COOKIES, STATE, CLAZZ_ID } from './lib/const.mjs';
+import { COOKIES, STATE, CLAZZ_ID, requireTarget} from './lib/const.mjs';
 import { playVideo, DEFAULT_BASE } from './lib/player.mjs';
 
+
+requireTarget();
 const argv = Object.fromEntries(
   process.argv.slice(2).map((a) => {
     const [k, v = 'true'] = a.replace(/^--/, '').split('=');
