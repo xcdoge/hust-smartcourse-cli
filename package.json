@@ -1,6 +1,6 @@
 {
   "name": "hust-smartcourse-cli",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": false,
   "type": "module",
   "description": "智慧华中大课程平台任务点自动化 CLI：视频 / 文档 / 测验，纯 HTTP 实现，含 CAS 登录与播放协议逆向",
