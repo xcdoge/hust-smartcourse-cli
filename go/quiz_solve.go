@@ -143,6 +143,11 @@ func solveOne(cfg *Config, q Question, kind string) (any, error) {
 		out, err := callLLM(&cfg.LLM, solveSystemPrompt, prompt)
 		if err != nil {
 			lastErr = err
+			// 输出被 max_tokens 截断时自动放宽，后续题目也沿用这个上限
+			if strings.Contains(err.Error(), "finish_reason=length") && cfg.LLM.MaxTokens < 8192 {
+				cfg.LLM.MaxTokens *= 2
+				logf("  输出被截断，max_tokens 调到 %d 重试", cfg.LLM.MaxTokens)
+			}
 			sleepSec(1)
 			continue
 		}

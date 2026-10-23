@@ -28,12 +28,33 @@ type chatRequest struct {
 type chatResponse struct {
 	Choices []struct {
 		Message struct {
-			Content string `json:"content"`
+			Content          string `json:"content"`
+			ReasoningContent string `json:"reasoning_content"`
 		} `json:"message"`
+		FinishReason string `json:"finish_reason"`
 	} `json:"choices"`
 	Error *struct {
 		Message string `json:"message"`
 	} `json:"error"`
+}
+
+// 空内容时能说清楚原因，而不是只报「模型返回空」
+func emptyReason(cr chatResponse) string {
+	if len(cr.Choices) == 0 {
+		return "接口没有返回 choices"
+	}
+	c := cr.Choices[0]
+	why := "content 为空"
+	if c.FinishReason != "" {
+		why += "，finish_reason=" + c.FinishReason
+	}
+	if c.FinishReason == "length" {
+		why += "（输出被 max_tokens 截断，调大 [llm] max_tokens 或换非推理模型)"
+	}
+	if c.Message.ReasoningContent != "" {
+		why += "（只有 reasoning_content，模型把答案放在思考区了）"
+	}
+	return why
 }
 
 // callLLM 调 OpenAI 兼容接口，返回模型输出
@@ -78,7 +99,11 @@ func callLLM(cfg *LLMConfig, system, user string) (string, error) {
 	if len(cr.Choices) == 0 {
 		return "", fmt.Errorf("接口没有返回 choices")
 	}
-	return cr.Choices[0].Message.Content, nil
+	content := strings.TrimSpace(cr.Choices[0].Message.Content)
+	if content == "" {
+		return "", fmt.Errorf("%s", emptyReason(cr))
+	}
+	return content, nil
 }
 
 // ---------- 提示词 ----------

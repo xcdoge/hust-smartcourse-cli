@@ -134,7 +134,16 @@ async function callLLM(llm, system, user) {
   if (j.error && j.error.message) throw new Error(`接口报错: ${j.error.message}`);
   if (res.status !== 200) throw new Error(`接口返回 HTTP ${res.status}: ${text.slice(0, 120)}`);
   if (!j.choices || !j.choices.length) throw new Error('接口没有返回 choices');
-  return j.choices[0].message.content;
+  const c = j.choices[0];
+  const content = String(c.message?.content || '').trim();
+  if (!content) {
+    let why = 'content 为空';
+    if (c.finish_reason) why += `，finish_reason=${c.finish_reason}`;
+    if (c.finish_reason === 'length') why += '（输出被 max_tokens 截断，调大 [llm] max_tokens 或换非推理模型）';
+    if (c.message?.reasoning_content) why += '（只有 reasoning_content，模型把答案放在思考区了）';
+    throw new Error(why);
+  }
+  return content;
 }
 
 async function solveOne(cfg, q, kind) {
@@ -147,6 +156,11 @@ async function solveOne(cfg, q, kind) {
       return parseAnswer(out, kind);
     } catch (e) {
       lastErr = e;
+      // 输出被 max_tokens 截断时自动放宽，后续题目也沿用
+      if (String(e.message || '').includes('finish_reason=length') && cfg.llm.max_tokens < 8192) {
+        cfg.llm.max_tokens *= 2;
+        console.log(`  输出被截断，max_tokens 调到 ${cfg.llm.max_tokens} 重试`);
+      }
       await sleep(1000);
     }
   }
