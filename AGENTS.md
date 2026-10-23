@@ -136,6 +136,13 @@ export GOTMPDIR=$GOPATH/tmp
 8. **`type Answer` 必须是别名 `= json.RawMessage`**，定义类型会被编码成 base64。
 9. **上报循环必须按 tick 间隔 sleep**。一口气把进度推到底，服务端看到「1 秒内前进几百秒」
    会全部拒绝，表现为所有 `isPassed=false`。步长是 `speed*tick`，间隔是 `tick` 秒。
+10. **交卷地址不能直接 resolve 相对路径**。练习题页面的表单 action 是
+    `addStudentWorkNewWeb?...`（相对地址），按页面路径 `/mooc-ans/api/work` 解析会拼成
+    `/mooc-ans/api/addStudentWorkNewWeb`，这是 404，表现为交卷返回一堆 HTML。
+    正确端点是 `/mooc-ans/work/addStudentWorkNewWeb`。单元检测题给的是带 `/api/` 的完整路径，
+    同样要替换成 `/work/`。三种形态分别处理，别只写一个 replace。
+11. **作业页面的标题能区分状态**：`做作业` 可作答、`查看作业` 已提交、`查看已批阅作业` 已出分、
+    `500` 是平台自己崩了。抓题和交卷前都要按标题过滤，否则会往已批阅的作业里重复提交。
 
 ## 提交与发布
 
