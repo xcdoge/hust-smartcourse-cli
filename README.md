@@ -42,6 +42,10 @@ cd hust-smartcourse-cli && npm install
 
 > Node 低于 18 会报错（用到内置 `fetch` 和 `AbortSignal.timeout`）。
 
+**Windows 首次运行提示"未知发布者"**：exe 用自签名证书签过，Windows 不认这个根证书。
+想消除提示，下载 `hsc-codesign.cer` 后双击安装到「受信任的根证书颁发机构」(当前用户) 即可。
+不装也能用：SmartScreen 里点「更多信息 → 仍要运行」。
+
 ## 快速开始
 
 ### 1. 登录
