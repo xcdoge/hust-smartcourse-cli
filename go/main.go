@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
+	"strings"
 )
+
+const version = "1.1.0"
 
 func usage() {
 	fmt.Print(`hsc —— 智慧华中大课程平台 任务点自动化 CLI
@@ -29,7 +33,71 @@ func usage() {
 其他
   captcha-test          用标注样本验证验证码识别准确率
   version
+  q                     退出交互模式
 `)
+}
+
+// runCommand 执行一条命令；返回错误，由调用方决定怎么处理
+func runCommand(args []string) error {
+	if len(args) == 0 {
+		usage()
+		return nil
+	}
+	cmd, rest := args[0], args[1:]
+	switch cmd {
+	case "login-qr":
+		return cmdLoginQR(rest)
+	case "login-pw":
+		return cmdLoginPw(rest)
+	case "check":
+		return cmdCheck()
+	case "cred":
+		return cmdCred(rest)
+	case "course":
+		return cmdCourse()
+	case "scan":
+		return cmdScan()
+	case "doc":
+		return cmdDoc(rest)
+	case "play":
+		return cmdPlay(rest)
+	case "quiz":
+		return cmdQuiz(rest)
+	case "captcha-test":
+		return cmdCaptchaTest()
+	case "version", "-v", "--version":
+		fmt.Printf("hsc %s\n", version)
+		return nil
+	case "help", "-h", "--help":
+		usage()
+		return nil
+	default:
+		return fmt.Errorf("未知命令: %s（输入 help 看用法）", cmd)
+	}
+}
+
+// interactiveLoop 双击 exe 时的交互模式：敲命令、回车执行，q 退出
+func interactiveLoop() {
+	fmt.Printf("hsc %s —— 交互模式（输入 help 看命令，输入 q 退出）\n\n", version)
+	usage()
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		fmt.Print("\nhsc> ")
+		line, err := reader.ReadString('\n')
+		if err != nil {
+			return
+		}
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		if line == "q" || line == "quit" || line == "exit" {
+			return
+		}
+		if err := runCommand(strings.Fields(line)); err != nil {
+			fmt.Fprintln(os.Stderr, "✘", err)
+		}
+	}
 }
 
 func main() {
@@ -38,45 +106,20 @@ func main() {
 		os.Exit(1)
 	}
 	args := os.Args[1:]
+
+	// 双击 exe（无参数 + 真终端）→ 进交互模式，窗口不会一闪而过
 	if len(args) == 0 {
+		if isInteractive() {
+			interactiveLoop()
+			return
+		}
 		usage()
 		return
 	}
-	cmd := args[0]
 
-	var err error
-	switch cmd {
-	case "login-qr":
-		err = cmdLoginQR(args[1:])
-	case "login-pw":
-		err = cmdLoginPw(args[1:])
-	case "check":
-		err = cmdCheck()
-	case "cred":
-		err = cmdCred(args[1:])
-	case "course":
-		err = cmdCourse()
-	case "scan":
-		err = cmdScan()
-	case "doc":
-		err = cmdDoc(args[1:])
-	case "play":
-		err = cmdPlay(args[1:])
-	case "quiz":
-		err = cmdQuiz(args[1:])
-	case "captcha-test":
-		err = cmdCaptchaTest()
-	case "version", "-v", "--version":
-		fmt.Println("hsc 1.1.0")
-	case "help", "-h", "--help":
-		usage()
-	default:
-		fmt.Fprintf(os.Stderr, "未知命令: %s\n\n", cmd)
-		usage()
-		os.Exit(2)
-	}
-	if err != nil {
+	if err := runCommand(args); err != nil {
 		fmt.Fprintln(os.Stderr, "✘", err)
+		pauseIfInteractive()
 		os.Exit(1)
 	}
 }

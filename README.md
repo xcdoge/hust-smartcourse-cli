@@ -24,6 +24,9 @@
 
 **Go 版**（不用自己编译）：去 [Releases](https://github.com/xcdoge/hust-smartcourse-cli/releases) 下载对应平台的 `hsc-*`。
 
+**双击 exe 会进交互模式**：打印用法后停在 `hsc>` 提示符，直接敲命令回车执行，`q` 退出（所以窗口不会一闪而过）。
+在终端里带参数跑就是普通 CLI：`hsc.exe play --speed=10`。
+
 自己编译：
 
 ```bash

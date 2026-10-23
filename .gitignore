@@ -24,3 +24,6 @@ Thumbs.db
 go/hsc
 go/hsc.exe
 go/state/
+
+# 发布产物（二进制不入库）
+/dist/
