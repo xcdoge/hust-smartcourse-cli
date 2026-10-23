@@ -40,7 +40,7 @@ export async function playVideo(jar, point, opts = {}) {
   const userId = uidFromJar(jar);
   if (!objectId) return { ok: false, reason: '缺少 objectid' };
 
-  log(`▶ objectid=${objectId} jobid=${jobId || '(无)'} uid=${userId}`);
+  log(`objectid=${objectId} jobid=${jobId || '-'} uid=${userId}`);
   const st = await videoStatus(jar, base, objectId, fidFromJar(jar));
   log(`  status ${st.status} ${JSON.stringify(st.data ?? st.text).slice(0, 240)}`);
   if (!st.data || st.data.status === 'fail') return { ok: false, reason: '拿不到视频信息', status: st.status };

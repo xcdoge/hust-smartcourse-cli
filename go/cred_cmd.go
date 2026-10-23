@@ -18,7 +18,7 @@ func cmdCred(args []string) error {
 			if err := saveCreds(u, p); err != nil {
 				return err
 			}
-			fmt.Printf("✔ 已加密保存到 state/%s（账号 %s）\n", encCredFile, maskUser(u))
+			fmt.Printf("已保存 state/%s (账号 %s)\n", encCredFile, maskUser(u))
 			return nil
 		}
 		ok, err := migratePlainCreds()
@@ -26,7 +26,7 @@ func cmdCred(args []string) error {
 			return err
 		}
 		if ok {
-			fmt.Println("✔ 已把 state/cred.txt 迁移为加密文件，并删除明文")
+			fmt.Println("已迁移 cred.txt 为加密文件，明文已删除")
 			return credStatus()
 		}
 		return fmt.Errorf("没有可迁移的明文；用法: hsc cred save <学号> <密码>")
@@ -49,7 +49,7 @@ func cmdCred(args []string) error {
 			fmt.Println("— 本来就没有凭据文件")
 			return nil
 		}
-		fmt.Println("✔ 已删除: " + joinStrings(removed, ", "))
+		fmt.Println("已删除: " + joinStrings(removed, ", "))
 		return nil
 	default:
 		return fmt.Errorf("未知子命令: %s（可用 save/show/status/forget）", sub)
@@ -59,16 +59,16 @@ func cmdCred(args []string) error {
 func credStatus() error {
 	encExists := fileExists(statePath(encCredFile))
 	plainExists := fileExists(statePath(txtCredFile))
-	fmt.Printf("加密凭据 state/%-14s %s\n", encCredFile, boolMark(encExists, "✔ 存在", "— 无"))
-	fmt.Printf("明文凭据 state/%-14s %s\n", txtCredFile, boolMark(plainExists, "⚠ 存在（建议迁移）", "— 无"))
+	fmt.Printf("加密凭据 state/%-14s %s\n", encCredFile, boolMark(encExists, "存在", "无"))
+	fmt.Printf("明文凭据 state/%-14s %s\n", txtCredFile, boolMark(plainExists, "存在（建议迁移）", "无"))
 	if encExists {
 		if _, err := loadEncryptedCreds(); err == nil {
 			var cf credFile
 			_ = readJSON(statePath(encCredFile), &cf)
 			fmt.Printf("  保存于 %s  账号 %s\n", cf.SavedAt, cf.User)
-			fmt.Println("  可解密 : ✔ 本机可解开")
+			fmt.Println("  可解密 : 是")
 		} else {
-			fmt.Println("  可解密 : ✘ 解不开（换机器/换用户/被改过）")
+			fmt.Println("  可解密 : 否（换机器/换用户/被改过）")
 		}
 	}
 	return nil

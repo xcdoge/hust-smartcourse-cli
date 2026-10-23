@@ -36,15 +36,15 @@ for (const [name, url] of targets) {
       break;
     }
     const verdict = /\/logout/.test(cur)
-      ? '✘ 登出'
+      ? '登出'
       : /pass\.hust\.edu\.cn\/cas|passport/.test(cur)
-        ? '✘ 未登录'
+        ? '未登录'
         : html.length > 2000
-          ? '✔ 可用'
+          ? '可用'
           : '? 页面过小';
     rows.push({ name, status, final: cur.slice(0, 110), len: html.length, verdict });
   } catch (e) {
-    rows.push({ name, status: -1, final: String(e).slice(0, 80), len: 0, verdict: '✘ 异常' });
+    rows.push({ name, status: -1, final: String(e).slice(0, 80), len: 0, verdict: '异常' });
   }
 }
 
@@ -52,7 +52,7 @@ for (const r of rows) {
   console.log(`${r.name.padEnd(16)} ${String(r.status).padEnd(4)} len=${String(r.len).padEnd(6)} ${r.verdict}  ${r.final}`);
 }
 
-const anyOk = rows.some((r) => r.verdict.startsWith('✔'));
+const anyOk = rows.some((r) => r.verdict === '可用');
 if (!anyOk) {
   const dump = rows.map((r) => `${r.name} ${r.status} ${r.final}`).join('\n');
   fs.writeFileSync(`${STATE}/probe-session.log`, dump + '\n');

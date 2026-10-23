@@ -172,8 +172,8 @@ func cmdCourse() error {
 		return err
 	}
 	c := newClient(NewJar())
-	if err := c.Jar.Load(); err != nil {
-		return fmt.Errorf("读取登录态失败（先登录）: %w", err)
+	if err := loadSession(c); err != nil {
+		return err
 	}
 	chapters, size, err := fetchChapters(c, t)
 	if err != nil {

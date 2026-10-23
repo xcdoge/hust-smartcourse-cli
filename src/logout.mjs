@@ -23,7 +23,7 @@ function remove(p) {
   }
 }
 
-// ① 有会话就通知 CAS 注销（失败不影响本地清理）
+// 1. 有会话就通知 CAS 注销
 try {
   const jar = new CookieJar();
   jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
@@ -35,7 +35,7 @@ try {
   // 没有 cookie 文件就跳过
 }
 
-// ② 删除本地登录态
+// 2. 删除本地登录态
 const removed = [];
 for (const [name, p] of [
   ['cookies.json', COOKIES],
@@ -44,7 +44,7 @@ for (const [name, p] of [
   if (remove(p)) removed.push(name);
 }
 
-// ③ --all 连凭据一起清
+// 3. --all 连凭据一起清
 if (all) {
   for (const [name, p] of [
     ['cred.enc.json', `${STATE}/cred.enc.json`],
@@ -55,8 +55,8 @@ if (all) {
 }
 
 if (removed.length === 0) {
-  console.log('— 本来就没有登录态');
+  console.log('无登录态可清除');
 } else {
-  console.log(`✔ 已退出登录，删除: ${removed.join(', ')}`);
+  console.log(`已清除: ${removed.join(', ')}`);
   if (!all) console.log('  （加密凭据仍保留，下次直接 node src/login-pw.mjs；要一并清除用 --all）');
 }

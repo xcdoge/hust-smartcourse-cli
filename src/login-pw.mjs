@@ -130,7 +130,7 @@ if (codeArg) {
   const jar = new CookieJar();
   jar.load(pending.jar);
   const r = await submit(jar, pending.lt, pending.execution, codeArg);
-  console.log('提交:', r.ok ? '✔ 成功' : '✘ ' + r.msg);
+  console.log('提交:', r.ok ? '成功' : '' + r.msg);
   if (!r.ok) process.exit(2);
   const sso = await exchange(jar);
   const site = await verifySite(jar);
@@ -167,18 +167,18 @@ for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
   const site = await verifySite(jar);
   fs.writeFileSync(COOKIES, JSON.stringify(jar.toJSON(), null, 2));
   if (site.chapters > 0) {
-    console.log(`✔ 登录成功 | 换票 ${sso.res.status} | 章节 ${site.chapters} | cookie 已写 ${COOKIES}`);
+    console.log(`登录成功，cookie 已写入 ${COOKIES}`);
   } else {
-    console.log(`✔ 登录成功 | cookie 已写 ${COOKIES}`);
-    console.log('  下一步：复制 config/target.example.json 到 state/target.json 填入课程参数，再跑 course / scan');
+    console.log(`登录成功，cookie 已写入 ${COOKIES}`);
+    console.log('课程未配置，先执行: node src/init.mjs "<课程链接>"');
   }
   if (wantSave) {
     const c = loadCreds();
     const f = saveCreds(c.username, c.password);
-    console.log(`✔ 凭据已加密保存到 ${f}（下次不用再输）`);
+    console.log(`凭据已加密保存到 ${f}`);
   }
   process.exit(site.chapters > 0 ? 0 : 3);
 }
 
-console.log('✘ 多次尝试未成功');
+console.log('多次尝试未成功');
 process.exit(1);

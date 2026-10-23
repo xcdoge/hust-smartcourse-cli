@@ -230,8 +230,8 @@ func cmdQuizDump() error {
 		return fmt.Errorf("先跑 hsc scan: %w", err)
 	}
 	c := newClient(NewJar())
-	if err := c.Jar.Load(); err != nil {
-		return fmt.Errorf("读取登录态失败（先登录）: %w", err)
+	if err := loadSession(c); err != nil {
+		return err
 	}
 
 	seen := map[string]bool{}
@@ -250,7 +250,7 @@ func cmdQuizDump() error {
 		pageURL := workPageURL(t, w, kt, ut)
 		_, _, body, err := c.Follow(pageURL, browserHeaders)
 		if err != nil {
-			logf("✘ %s 抓取失败: %v", truncate(r.Title, 20), err)
+			logf("抓取失败 %s: %v", truncate(r.Title, 20), err)
 			continue
 		}
 		html := string(body)
@@ -273,7 +273,7 @@ func cmdQuizDump() error {
 			Index: len(quizzes), Title: firstNonEmpty(r.Title, w.Title), Work: w,
 			Action: action, PageURL: pageURL, Hidden: parseHidden(html), Questions: qs,
 		})
-		logf("[%d] %d 题 %s", len(quizzes)-1, len(qs), truncate(r.Title, 24))
+		logf("[%d] %d 题  %s", len(quizzes)-1, len(qs), truncate(r.Title, 24))
 		sleepSec(0.2)
 	}
 
@@ -334,11 +334,11 @@ func cmdQuizSubmit(only int) error {
 	}
 	var quizzes []Quiz
 	if err := readJSON(statePath("quizzes.json"), &quizzes); err != nil {
-		return fmt.Errorf("先跑 hsc quiz dump: %w", err)
+		return fmt.Errorf("缺少 state/quizzes.json，先执行 hsc quiz dump")
 	}
 	answers := map[string]map[string]Answer{}
 	if err := readJSON(statePath("answers.json"), &answers); err != nil {
-		return fmt.Errorf(`缺 state/answers.json（格式 {"<index>": {"<qid>": "A"}}）: %w`, err)
+		return fmt.Errorf(`缺少 state/answers.json，格式 {"<index>": {"<qid>": "A"}}`)
 	}
 
 	okCount, skipCount, failCount := 0, 0, 0
@@ -444,7 +444,7 @@ func cmdQuizSubmit(only int) error {
 		ok := strings.Contains(msg, `"status":true`) || strings.Contains(msg, "success")
 		if ok {
 			okCount++
-			logf("[%d] 填 %d/%d 题 -> %s", q.Index, filled, len(q.Questions), truncate(msg, 60))
+			logf("[%d] %d/%d 题  %s", q.Index, filled, len(q.Questions), truncate(msg, 50))
 		} else {
 			failCount++
 			logf("[%d] 失败 -> %s", q.Index, truncate(msg, 80))

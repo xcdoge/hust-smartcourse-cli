@@ -48,20 +48,20 @@ func cmdInit(args []string) error {
 	}
 
 	if t.CourseID == "" || t.ClazzID == "" {
-		fmt.Println("✔ 已生成 state/target.json（还是空的，需要你填）")
+		fmt.Println("state/target.json 已生成，courseId / clazzId 为空")
 		fmt.Println()
-		fmt.Println("两种填法：")
-		fmt.Println("  ① 直接把课程链接丢给它，自动解析：")
-		fmt.Println(`     hsc init "https://smartcourse.hust.edu.cn/.../mycourse/stu?courseid=...&clazzid=...&cpi=..."`)
-		fmt.Println("  ② 手动编辑 state/target.json：")
-		fmt.Println(`     { "courseId": "...", "clazzId": "...", "cpi": "...", "enc": "..." }`)
+		fmt.Println("补全方式：")
+		fmt.Println("  hsc init \"<课程链接>\"")
+		fmt.Println(`  例: hsc init "https://smartcourse.hust.edu.cn/...?courseid=...&clazzid=...&cpi=..."`)
+		fmt.Println("  hsc init --courseid=... --clazzid=... --cpi=... --enc=...")
+
 		fmt.Println()
-		fmt.Println("这些参数都在浏览器打开课程时的地址栏里。")
+		fmt.Println("参数取自浏览器地址栏。")
 		return nil
 	}
 
-	fmt.Printf("✔ 已写入 state/target.json\n  courseId = %s\n  clazzId  = %s\n  cpi      = %s\n",
-		t.CourseID, t.ClazzID, firstNonEmpty(t.CPI, "(空)"))
-	fmt.Println("\n下一步：hsc course  然后 hsc scan")
+	fmt.Printf("state/target.json 已写入\n  courseId = %s\n  clazzId  = %s\n  cpi      = %s\n",
+		t.CourseID, t.ClazzID, firstNonEmpty(t.CPI, "-"))
+	fmt.Println("\n接下来: hsc course")
 	return nil
 }

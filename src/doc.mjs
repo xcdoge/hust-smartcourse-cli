@@ -87,10 +87,10 @@ for (let i = 0; i < course.chapters.length; i++) {
       if (ok) done++;
       else failed++;
       results.push({ chapter: ch.knowledgeId, name, status: r.status, ok, msg: j?.msg || t.slice(0, 80) });
-      log(`${ok ? '✔' : '✘'} ${name.slice(0, 40)} -> ${j?.msg || r.status}`);
+      log(`${ok ? 'ok' : 'fail'} ${name.slice(0, 40)} -> ${j?.msg || r.status}`);
     } catch (e) {
       failed++;
-      log(`✘ ${name.slice(0, 40)} 异常 ${String(e).slice(0, 80)}`);
+      log(`fail ${name.slice(0, 40)} 异常 ${String(e).slice(0, 80)}`);
     }
     await sleep(250);
   }

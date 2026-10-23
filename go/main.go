@@ -10,32 +10,30 @@ import (
 const version = "1.1.0"
 
 func usage() {
-	fmt.Print(`hsc —— 智慧华中大课程平台 任务点自动化 CLI
-
-用法: hsc <命令> [参数]
+	fmt.Print(`用法: hsc <命令> [参数]
 
 登录
-  login-qr              扫码登录（生成 state/login-qr.png，企业微信扫）
-  login-pw [--manual]   账密登录（内置验证码识别，失败自动换图重试）
-  login-pw --code=1234  配合 --manual：带验证码提交
-  check                 会话体检
-  logout [--all]        退出登录（--all 连凭据一起清）
+  login-qr              扫码登录，二维码写入 state/login-qr.png
+  login-pw [--manual]   账密登录，自动识别验证码
+  login-pw --code=NNNN  手动指定验证码，配合 --manual
+  check                 检查当前会话是否有效
+  logout [--all]        清除登录态；--all 同时删除已存凭据
   cred <save|show|status|forget>
 
 课程
-  init [课程链接]       生成 state/target.json（可直接贴课程 URL 自动解析）
-  course                抓课程结构（章节/视频/文档/测验）
-  scan                  逐 tab 全量扫描（含练习题）
+  init [课程链接]        写 state/target.json，可直接带课程 URL
+  course                抓取课程结构：章节、视频、文档、测验
+  scan                  扫描每章全部 tab，包含练习题
 
 任务点
-  play [--all] [--speed=10] [--tick=10] [--limit=N] [--objectid=X] [--dry]
+  play [--all] [--speed=N] [--tick=N] [--limit=N] [--objectid=X] [--dry]
   doc  [--all]
   quiz <dump|submit|peek> [--only=N]
 
 其他
-  captcha-test          用标注样本验证验证码识别准确率
+  captcha-test          用标注样本测试验证码识别准确率
   version
-  q                     退出交互模式
+  q                     退出
 `)
 }
 
@@ -78,13 +76,13 @@ func runCommand(args []string) error {
 		usage()
 		return nil
 	default:
-		return fmt.Errorf("未知命令: %s（输入 help 看用法）", cmd)
+		return fmt.Errorf("unknown command %q, run hsc help", cmd)
 	}
 }
 
 // interactiveLoop 双击 exe 时的交互模式：敲命令、回车执行，q 退出
 func interactiveLoop() {
-	fmt.Printf("hsc %s —— 交互模式（输入 help 看命令，输入 q 退出）\n\n", version)
+	fmt.Printf("hsc %s\n\n", version)
 	usage()
 	reader := bufio.NewReader(os.Stdin)
 	for {
@@ -101,7 +99,7 @@ func interactiveLoop() {
 			return
 		}
 		if err := runCommand(strings.Fields(line)); err != nil {
-			fmt.Fprintln(os.Stderr, "✘", err)
+			fmt.Fprintln(os.Stderr, "hsc:", err)
 		}
 	}
 }
@@ -124,7 +122,7 @@ func main() {
 	}
 
 	if err := runCommand(args); err != nil {
-		fmt.Fprintln(os.Stderr, "✘", err)
+		fmt.Fprintln(os.Stderr, "hsc:", err)
 		pauseIfInteractive()
 		os.Exit(1)
 	}

@@ -60,7 +60,7 @@ func loadTarget() (Target, error) {
 	var t Target
 	b, err := os.ReadFile(statePath("target.json"))
 	if err != nil {
-		return t, fmt.Errorf("缺少课程配置 state/target.json（参考 config/target.example.json）: %w", err)
+		return t, fmt.Errorf("未配置课程，先执行 hsc init \"<课程链接>\"")
 	}
 	if err := json.Unmarshal(b, &t); err != nil {
 		return t, fmt.Errorf("state/target.json 解析失败: %w", err)

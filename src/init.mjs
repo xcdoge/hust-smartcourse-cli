@@ -34,14 +34,13 @@ for (const a of process.argv.slice(2)) {
 fs.writeFileSync(path.join(STATE, 'target.json'), JSON.stringify(target, null, 2));
 
 if (!target.courseId || !target.clazzId) {
-  console.log('✔ 已生成 state/target.json（还是空的，需要你填）\n');
-  console.log('两种填法：');
-  console.log('  ① 直接把课程链接丢给它，自动解析：');
-  console.log('     node src/init.mjs "https://smartcourse.hust.edu.cn/...?courseid=...&clazzid=...&cpi=..."');
-  console.log('  ② 手动编辑 state/target.json');
-  console.log('\n这些参数都在浏览器打开课程时的地址栏里。');
+  console.log('state/target.json 已生成，courseId / clazzId 为空\n');
+  console.log('补全方式：');
+  console.log('  node src/init.mjs "<课程链接>"');
+  console.log('  node src/init.mjs --courseid=... --clazzid=... --cpi=... --enc=...');
+  console.log('\n参数取自浏览器地址栏。');
 } else {
-  console.log('✔ 已写入 state/target.json');
+  console.log('state/target.json 已写入');
   console.log(`  courseId = ${target.courseId}`);
   console.log(`  clazzId  = ${target.clazzId}`);
   console.log(`  cpi      = ${target.cpi || '(空)'}`);

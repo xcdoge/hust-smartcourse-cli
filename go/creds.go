@@ -174,7 +174,7 @@ func loadCreds() (*Credentials, error) {
 	if c, err := loadPlainCreds(); err == nil {
 		return c, nil
 	}
-	return nil, fmt.Errorf("没有可用的凭据，请任选其一：\n  ① hsc cred save <学号> <密码>\n  ② 在 state/cred.txt 写两行")
+	return nil, fmt.Errorf("没有可用凭据。执行 hsc cred save <学号> <密码>，或在 state/cred.txt 写两行")
 }
 
 func migratePlainCreds() (bool, error) {

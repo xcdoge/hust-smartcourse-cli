@@ -18,14 +18,14 @@ const log = (...a) => console.log(`[${ts()}]`, ...a);
 
 // ---------- 1) 会话 ----------
 if (!fs.existsSync(COOKIES)) {
-  console.log('✘ 没有 state/cookies.json');
+  console.log('没有 state/cookies.json，先登录');
   console.log('  请先在浏览器登录课程页，F12 → 网络 → 复制任一 mooc 请求为 cURL，粘进 state/cookies.txt，再跑 node src/import-cookies.mjs');
   process.exit(2);
 }
 const jar = new CookieJar();
 jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
 const v = await verify(jar);
-log(`会话: ${v.ok ? '✔ ' + v.len + ' 字节' : '✘ ' + v.reason}`);
+log(`会话: ${v.ok ? '有效 ' + v.len + ' 字节' : '无效 ' + v.reason}`);
 if (!v.ok) process.exit(2);
 
 // ---------- 2) 抓课程 ----------
@@ -89,7 +89,7 @@ fs.writeFileSync(
   JSON.stringify({ fetchedAt: new Date().toISOString(), courseId: COURSE_ID, clazzId: CLAZZ_ID, points: uniq }, null, 2)
 );
 if (uniq.length === 0) {
-  log('✘ 没抽到任务点，页面已存 state/course.html / studentcourse.html，需要人工看一下结构');
+  log('没抽到任务点，页面已存 state/course.html / studentcourse.html，结构需要人工确认');
   process.exit(3);
 }
 
@@ -110,10 +110,10 @@ for (const p of targets) {
       logger: log,
     })) });
   } catch (e) {
-    log('✘ 异常', String(e).slice(0, 160));
+    log('异常', String(e).slice(0, 160));
     results.push({ ...p, ok: false, reason: String(e).slice(0, 160) });
   }
 }
 const ok = results.filter((r) => r.ok).length;
 log(`完成 ${ok}/${results.length}`);
-for (const r of results) log(`  ${r.ok ? '✔' : '✘'} ${r.objectid} ${r.type} ${r.reason || ''}`);
+for (const r of results) log(`  ${r.ok ? 'ok' : 'fail'} ${r.objectid} ${r.type} ${r.reason || ''}`);

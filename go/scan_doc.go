@@ -36,8 +36,8 @@ func cmdScan() error {
 		return err
 	}
 	c := newClient(NewJar())
-	if err := c.Jar.Load(); err != nil {
-		return fmt.Errorf("读取登录态失败（先登录）: %w", err)
+	if err := loadSession(c); err != nil {
+		return err
 	}
 	chapters, _, err := fetchChapters(c, t)
 	if err != nil {
@@ -116,11 +116,11 @@ func cmdDoc(args []string) error {
 	}
 	var res ScanResult
 	if err := readJSON(statePath("scan.json"), &res); err != nil {
-		return fmt.Errorf("先跑 hsc scan: %w", err)
+		return fmt.Errorf("缺少 state/scan.json，先执行 hsc scan")
 	}
 	c := newClient(NewJar())
-	if err := c.Jar.Load(); err != nil {
-		return fmt.Errorf("读取登录态失败（先登录）: %w", err)
+	if err := loadSession(c); err != nil {
+		return err
 	}
 	done, skipped, failed := 0, 0, 0
 	for _, r := range res.Rows {
@@ -141,13 +141,13 @@ func cmdDoc(args []string) error {
 		ok := err == nil && strings.Contains(msg, "成功") || strings.Contains(msg, "已经完成")
 		if ok {
 			done++
-			logf("✔ %s -> %s", truncate(r.Title, 40), truncate(msg, 30))
+			logf("ok   %s  %s", truncate(r.Title, 40), truncate(msg, 24))
 		} else {
 			failed++
-			logf("✘ %s -> %s", truncate(r.Title, 40), truncate(msg, 40))
+			logf("fail %s  %s", truncate(r.Title, 40), truncate(msg, 30))
 		}
 		sleepSec(0.25)
 	}
-	logf("完成 %d，跳过(已完成) %d，失败 %d", done, skipped, failed)
+	logf("完成 %d，跳过 %d，失败 %d", done, skipped, failed)
 	return nil
 }

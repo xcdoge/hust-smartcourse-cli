@@ -22,7 +22,7 @@ func cmdLogout(args []string) error {
 	if err := jar.Load(); err == nil && jar.Count() > 0 {
 		c := newClient(jar)
 		if resp, _, _, err := c.Follow(casURL+"/logout", nil); err == nil {
-			fmt.Printf("已通知 CAS 注销（HTTP %d）\n", resp.StatusCode)
+			fmt.Printf("已注销 CAS 会话 (HTTP %d)\n", resp.StatusCode)
 		}
 	}
 
@@ -47,12 +47,12 @@ func cmdLogout(args []string) error {
 	}
 
 	if len(removed) == 0 {
-		fmt.Println("— 本来就没有登录态")
+		fmt.Println("无登录态可清除")
 		return nil
 	}
-	fmt.Println("✔ 已退出登录，删除: " + joinStrings(removed, ", "))
+	fmt.Println("已清除: " + joinStrings(removed, ", "))
 	if !all {
-		fmt.Println("  （加密凭据仍保留，下次直接 hsc login-pw；要一并清除用 hsc logout --all）")
+		fmt.Println("凭据保留，下次 login-pw 可直接用；要一并删除用 --all")
 	}
 	return nil
 }

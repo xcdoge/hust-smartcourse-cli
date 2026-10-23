@@ -117,4 +117,4 @@ console.log('status:', res.status);
 console.log('location:', loc.slice(0, 200));
 console.log('set-cookie:', (res.headers.getSetCookie?.() || []).map((c) => c.split(';')[0]).join(' | ').slice(0, 400));
 console.log('body[0:300]:', text.replace(/\s+/g, ' ').slice(0, 300));
-console.log('\n判定:', /logout/.test(loc) ? '✘ 被登出' : /pass\.hust|passport/.test(loc) ? '✘ 未登录' : res.status === 200 ? '✔ 通过' : '?');
+console.log('\n判定:', /logout/.test(loc) ? '被登出' : /pass\.hust|passport/.test(loc) ? '未登录' : res.status === 200 ? '通过' : '?');

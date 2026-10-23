@@ -62,7 +62,7 @@ for (let i = 1; i <= 60; i++) {
 }
 
 if (!redirectUrl) {
-  log('✘ 3 分钟内没等到扫码结果');
+  log('3 分钟内没等到扫码结果');
   process.exit(1);
 }
 

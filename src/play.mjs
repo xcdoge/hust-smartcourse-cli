@@ -80,11 +80,11 @@ for (const p of points) {
   try {
     results.push({ ...p, ...(await playVideo(jar, p, opts)) });
   } catch (e) {
-    log('✘ 异常', String(e).slice(0, 200));
+    log('异常', String(e).slice(0, 200));
     results.push({ ...p, ok: false, reason: String(e).slice(0, 200) });
   }
 }
-log('汇总:', results.map((r) => `${r.objectId || r.objectid || '?'}:${r.ok ? '✔' : '✘'}`).join(' '));
+log('汇总:', results.map((r) => `${r.objectId || r.objectid || '?'}:${r.ok ? 'ok' : 'fail'}`).join(' '));
 const failed = results.filter((r) => !r.ok);
 if (failed.length) {
   log('失败明细:');

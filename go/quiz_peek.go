@@ -8,7 +8,7 @@ import (
 func cmdQuizPeek(only int) error {
 	var quizzes []Quiz
 	if err := readJSON(statePath("quizzes.json"), &quizzes); err != nil {
-		return fmt.Errorf("先跑 hsc quiz dump: %w", err)
+		return fmt.Errorf("缺少 state/quizzes.json，先执行 hsc quiz dump")
 	}
 	for _, q := range quizzes {
 		if only >= 0 && q.Index != only {

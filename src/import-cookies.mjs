@@ -93,7 +93,7 @@ if (process.argv.includes('--check')) {
   const r = await verify(jar);
   console.log(
     r.ok
-      ? `SESSION_OK ✔ 已写入 state/cookies.json（课程页 ${r.len} 字节）`
-      : `SESSION_EXPIRED ✘ status=${r.status} url=${r.url.slice(0, 160)}`
+      ? `SESSION_OK 已写入 state/cookies.json（课程页 ${r.len} 字节）`
+      : `SESSION_EXPIRED status=${r.status} url=${r.url.slice(0, 160)}`
   );
 }

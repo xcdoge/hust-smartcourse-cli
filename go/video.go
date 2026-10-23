@@ -138,7 +138,7 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 		// 不限速：按倍速推进
 		target = dur - 2
 	}
-	logf("▶ %s | %.0fs | rt=%.2f", truncate(v.Title, 40), dur, rt)
+	logf("%s  %.0fs  rt=%.2f", truncate(v.Title, 40), dur, rt)
 	if dry {
 		logf("  (dry-run，不实际上报)")
 		return nil
@@ -156,7 +156,7 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 			return err
 		}
 		if passed {
-			logf("  ✔ 通过 (playingTime=%.0f/%.0f)", played, dur)
+			logf("  通过 playingTime=%.0f/%.0f", played, dur)
 			return nil
 		}
 		if played >= target {
@@ -169,7 +169,7 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 			st = st2
 		}
 		if passed, err := report(c, t, v, st, dur*pct, dur, rt); err == nil && passed {
-			logf("  ✔ 补报通过 (%.0f%%)", pct*100)
+			logf("  补报通过 %.0f%%", pct*100)
 			return nil
 		}
 		sleepSec(0.3)
@@ -182,7 +182,7 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 			continue
 		}
 		if passed, err := report(c, t, v, st2, dur*0.97, dur, rt); err == nil && passed {
-			logf("  ✔ 换 token 通过")
+			logf("  换 token 后通过")
 			return nil
 		}
 		sleepSec(3)
@@ -221,11 +221,11 @@ func cmdPlay(args []string) error {
 
 	var snap CourseSnapshot
 	if err := readJSON(statePath("course.json"), &snap); err != nil {
-		return fmt.Errorf("先跑 hsc course 抓结构: %w", err)
+		return fmt.Errorf("缺少 state/course.json，先执行 hsc course")
 	}
 	c := newClient(NewJar())
-	if err := c.Jar.Load(); err != nil {
-		return fmt.Errorf("读取登录态失败（先登录）: %w", err)
+	if err := loadSession(c); err != nil {
+		return err
 	}
 	defaultReportURL = snap.ReportURL
 
@@ -252,7 +252,7 @@ func cmdPlay(args []string) error {
 	for i, v := range todo {
 		logf("[%d/%d]", i+1, len(todo))
 		if err := playOne(c, snap.Target, v, opts.Speed, opts.Tick, opts.Dry); err != nil {
-			logf("  ✘ %v", err)
+			logf("  失败: %v", err)
 			fail++
 			continue
 		}

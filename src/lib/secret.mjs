@@ -104,11 +104,7 @@ export function loadCreds() {
   if (enc) return enc;
   const plain = loadPlaintext();
   if (plain) return plain;
-  throw new Error(
-    '没有可用的凭据，请任选其一：\n' +
-      '  ① node src/cred.mjs save        加密保存账号密码\n' +
-      '  ② 在 state/cred.txt 里写两行（学号 / 密码）',
-  );
+  throw new Error('没有可用凭据。执行 node src/cred.mjs save <学号> <密码>，或在 state/cred.txt 写两行');
 }
 
 export function hasCreds() {

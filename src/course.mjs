@@ -139,11 +139,11 @@ for (let i = 0; i < chapters.length; i++) {
 
 log(`\n视频任务点合计 ${points.length} 个（已通过 ${points.filter((p) => p.isPassed).length} 个）`);
 for (const p of points) {
-  log(`  ${p.isPassed ? '✔' : '▶'} ${(p.name || '').slice(0, 30)} | objectId=${p.objectId} jobid=${p.jobid} ${p.attDuration ? p.attDuration + 's' : ''}`);
+  log(`  ${p.isPassed ? 'ok' : '-'} ${(p.name || '').slice(0, 30)} | objectId=${p.objectId} jobid=${p.jobid} ${p.attDuration ? p.attDuration + 's' : ''}`);
 }
 
 if (chapters.length === 0 || points.length === 0) {
-  log('✘ 抓不到章节/视频（会话可能已过期），保留原有 state/course.json 不覆盖');
+  log('抓不到章节/视频（会话可能已过期），保留原有 state/course.json 不覆盖');
   process.exit(2);
 }
 

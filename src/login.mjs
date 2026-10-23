@@ -116,7 +116,7 @@ async function qr() {
       if (landed) {
         fs.writeFileSync(COOKIES, JSON.stringify(jar.toJSON(), null, 2));
         const ok = await verify(jar);
-        log(ok ? '会话校验通过 ✔' : '会话校验失败 ✘');
+        log(ok ? '会话校验通过' : '会话校验失败');
         console.log(ok ? 'LOGIN_OK' : 'LOGIN_BAD');
         return;
       }
@@ -207,7 +207,7 @@ async function pw() {
   await s.completeSso(r.ticket);
   fs.writeFileSync(COOKIES, JSON.stringify(s.jar.toJSON(), null, 2));
   const ok = await verify(s.jar);
-  log(ok ? '会话校验通过 ✔' : '会话校验失败 ✘');
+  log(ok ? '会话校验通过' : '会话校验失败');
   if (ok) {
     for (const g of [f, pendFile]) {
       try {

@@ -29,12 +29,12 @@ func finishLogin(c *Client, t Target) error {
 	if err := c.Jar.Save(); err != nil {
 		return err
 	}
-	fmt.Printf("✔ 登录成功 | 换票 %s | cookie 已写 state/cookies.json\n", truncate(status, 60))
+	fmt.Printf("登录成功，cookie 已写入 state/cookies.json (%s)\n", truncate(status, 40))
 
 	// 没有课程配置时，登录到此为止（选课是下一步的事）
 	if t.CourseID == "" {
-		fmt.Println("\n下一步：复制 config/target.example.json 到 state/target.json 填入课程参数，")
-		fmt.Println("        然后跑 hsc course / hsc scan")
+		fmt.Println("\n课程未配置，先执行: hsc init \"<课程链接>\"")
+
 		return nil
 	}
 
@@ -123,9 +123,9 @@ func cmdLoginPw(args []string) error {
 			logf("第 %d 次 | 识别失败: %v", attempt, rerr)
 			continue
 		}
-		logf("第 %d 次 | 识别 %s conf=%.3f 位数=%d", attempt, res.Code, res.Conf, res.Count)
+		logf("第%d次  识别 %s  conf=%.3f  位数 %d", attempt, res.Code, res.Conf, res.Count)
 		if res.Count != 4 || res.Conf < minCaptchaConf {
-			logf("   置信度/位数不足，换一张")
+			logf("  置信度或位数不足，换一张")
 			continue
 		}
 		out, err := submitLogin(c, lt, execution, creds.Username, creds.Password, res.Code)
@@ -133,7 +133,7 @@ func cmdLoginPw(args []string) error {
 			return err
 		}
 		if !out.OK {
-			logf("   服务端拒绝: %s", out.Message)
+			logf("  服务端拒绝: %s", out.Message)
 			if out.Need2FA {
 				return fmt.Errorf("该账号需要企业微信二次验证，暂不支持自动处理")
 			}
@@ -169,18 +169,18 @@ func cmdLoginQR(args []string) error {
 			"Referer":          casURL + "/login",
 		})
 		if err != nil {
-			logf("  第 %d 次请求异常: %v", i, err)
+			logf("  请求异常: %v", err)
 		} else if len(strings.TrimSpace(string(body))) > 0 {
 			var r struct {
 				RedirectURL string `json:"redirect_url"`
 			}
 			if json.Unmarshal(body, &r) == nil && r.RedirectURL != "" {
-				logf("  第 %d 次: 拿到 redirect_url", i)
+				logf("  已扫码")
 				redirect = r.RedirectURL
 				break
 			}
 		} else if i%5 == 0 {
-			logf("  第 %d 次: 等待扫码…", i)
+			logf("  %d/%d 等待扫码", i, 60)
 		}
 		sleepSec(3)
 	}
@@ -200,13 +200,13 @@ func cmdCheck() error {
 		return err
 	}
 	c := newClient(NewJar())
-	if err := c.Jar.Load(); err != nil {
-		return fmt.Errorf("读取 state/cookies.json 失败: %w", err)
+	if err := loadSession(c); err != nil {
+		return err
 	}
 	chapters, size, err := verifySite(c, t)
 	if err != nil {
 		return err
 	}
-	fmt.Printf("SESSION_OK ✔ 章节页 %d 字节 | 章节 %d 个\n", size, chapters)
+	fmt.Printf("会话有效，章节页 %d 字节，%d 个章节\n", size, chapters)
 	return nil
 }
