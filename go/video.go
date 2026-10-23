@@ -214,6 +214,7 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 		if played >= target {
 			break
 		}
+		sleepSec(tickSec)
 	}
 	// 阶梯补报：95% → 98%，每次换新 dtoken
 	for _, pct := range []float64{0.95, 0.96, 0.97, 0.98} {
