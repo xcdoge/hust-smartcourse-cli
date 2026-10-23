@@ -53,9 +53,19 @@ func cmdScan() error {
 	if err := loadSession(c); err != nil {
 		return err
 	}
-	chapters, _, err := fetchChapters(c, t)
+	res, err := scanCourse(c, t)
 	if err != nil {
 		return err
+	}
+	logf("扫描完成：%d 个附件，类型分布见 state/scan.json", len(res.Rows))
+	return nil
+}
+
+// scanCourse 扫描全部章节的全部 tab，写入 state/scan.json
+func scanCourse(c *Client, t Target) (*ScanResult, error) {
+	chapters, _, err := fetchChapters(c, t)
+	if err != nil {
+		return nil, err
 	}
 	logf("章节 %d 个", len(chapters))
 
@@ -108,7 +118,7 @@ func cmdScan() error {
 	}
 
 	if err := writeJSON(statePath("scan.json"), res); err != nil {
-		return err
+		return nil, err
 	}
 	logf("附件类型统计：")
 	for k, v := range res.Types {
@@ -121,7 +131,7 @@ func cmdScan() error {
 		}
 	}
 	logf("共 %d 个附件，其中非视频/文档 %d 个（已写 state/scan.json）", len(res.Rows), nonMedia)
-	return nil
+	return &res, nil
 }
 
 // cmdDoc 完成文档/图片任务点

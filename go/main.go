@@ -22,7 +22,7 @@ func usage() {
   config [show|init]    查看/生成 state/config.toml
 
 课程
-  init [序号|课程链接]   列出账号下的课程，按序号选课
+  init [序号|课程链接]   列出课程并按序号选课（自动抓结构 + 扫描）
   course                抓取课程结构：章节、视频、文档、测验
   scan                  扫描每章全部 tab，包含练习题
 

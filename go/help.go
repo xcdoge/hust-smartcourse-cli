@@ -113,11 +113,12 @@ var commandHelp = map[string]string{
 选课。不带参数时列出账号下的所有课程。
 
 参数:
-  序号          选第 N 门课，自动抓取课程结构
-  课程链接      从 URL 里解析 courseid / clazzid / cpi
+  序号          选第 N 门课，自动抓取课程结构并扫描练习题
+  课程链接      从 URL 里解析 courseid / clazzid / cpi，同样会抓取并扫描
 
 选项:
-  --refresh, -r   强制重新拉课程列表（默认用 state/courses.json 缓存）
+  --no-scan       只抓结构，不扫描练习题（大课程能省一分钟）
+  --refresh, -r   强制重新拉课程列表（列表本来每次都会刷新）
   -h, --help      显示本帮助
 
 示例:

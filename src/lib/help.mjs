@@ -62,10 +62,11 @@ export const HELP = {
 选课。不带参数时列出账号下的所有课程。
 
 参数:
-  序号          选第 N 门课
+  序号          选第 N 门课，自动抓结构并扫描练习题
   课程链接      从 URL 里解析 courseid / clazzid / cpi
 
 选项:
+  --no-scan       只抓结构，不扫描练习题
   --refresh, -r   强制重新拉课程列表
   -h, --help      显示本帮助`,
 

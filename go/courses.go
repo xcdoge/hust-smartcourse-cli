@@ -119,6 +119,11 @@ func loadCourseList(c *Client, refresh bool) ([]CourseItem, error) {
 
 // switchCourse 按序号切课程：写 target.json，并在快照不匹配时重抓
 func switchCourse(c *Client, id int) (Target, error) {
+	return switchCourseOpt(c, id, false)
+}
+
+// switchCourseOpt withScan=true 时顺带扫描练习题（init 用，play/quiz 不需要）
+func switchCourseOpt(c *Client, id int, withScan bool) (Target, error) {
 	// 序号是按「用户刚看到的列表」算的，缓存可能是旧的（课程增减会改变顺序），
 	// 所以切课前先刷新一次；刷新失败才退回缓存。
 	list, err := loadCourseList(c, true)
@@ -145,12 +150,20 @@ func switchCourse(c *Client, id int) (Target, error) {
 	}
 	logf("已切换到 [%d] %s", item.Index, firstNonEmpty(item.Name, item.CourseID))
 
-	// 快照是别的课的，重抓一份
+	// 快照是别的课的，重抓一份；顺手把练习题那层也扫了，省得用户忘了跑 scan
 	var snap CourseSnapshot
 	if err := readJSON(statePath("course.json"), &snap); err != nil || snap.Target.CourseID != t.CourseID {
 		logf("抓取课程结构…")
 		if _, err := crawlCourse(c, t); err != nil {
 			return t, fmt.Errorf("切换后抓取失败: %w", err)
+		}
+		var scan ScanResult
+		needScan := withScan && (readJSON(statePath("scan.json"), &scan) != nil || scan.CourseID != t.CourseID)
+		if needScan {
+			logf("扫描练习题…")
+			if _, err := scanCourse(c, t); err != nil {
+				logf("扫描失败（不影响播放）: %v", err)
+			}
 		}
 	}
 	return t, nil

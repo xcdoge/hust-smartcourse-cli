@@ -15,10 +15,15 @@ import (
 //	hsc init --refresh   强制重新拉课程列表
 func cmdInit(args []string) error {
 	refresh := false
+	noScan := false
 	var positional []string
 	for _, a := range args {
 		if a == "--refresh" || a == "-r" {
 			refresh = true
+			continue
+		}
+		if a == "--no-scan" {
+			noScan = true
 			continue
 		}
 		positional = append(positional, trimQuotes(a))
@@ -50,7 +55,7 @@ func cmdInit(args []string) error {
 		if !hasSession {
 			return fmt.Errorf("未登录，先执行 hsc login-qr 或 hsc login-pw")
 		}
-		_, err = switchCourse(c, n)
+		_, err = switchCourseOpt(c, n, !noScan)
 		return err
 	}
 

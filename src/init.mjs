@@ -45,7 +45,14 @@ if (first && (first.startsWith('http://') || first.startsWith('https://'))) {
   const n = Number(first);
   if (!Number.isInteger(n) || n < 1) throw new Error(`参数 ${first} 既不是序号也不是课程链接`);
   await switchCourse(n);
-  console.log('课程已切换，接着跑: node src/course.mjs');
+  // 切完课顺手抓结构 + 扫描，免得用户忘了跑 scan 导致后续拿到 403
+  const { spawnSync } = await import('node:child_process');
+  const run = (script) => {
+    const r = spawnSync(process.execPath, [path.join(import.meta.dirname, script)], { stdio: 'inherit' });
+    return r.status === 0;
+  };
+  run('course.mjs');
+  if (!args.includes('--no-scan')) run('scan.mjs');
 } else {
   // 现拉：缓存顺序可能过期，紧接着选课会刷新，两边不一致就会切错课
   const list = await loadCourseList(true);
