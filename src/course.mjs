@@ -80,17 +80,24 @@ for (let i = 0; i < chapters.length; i++) {
   const cardsUrl =
     `${SMART_ORIGIN}/mooc-ans/knowledge/cards?clazzid=${c.clazzId}&courseid=${c.courseId}` +
     `&knowledgeid=${c.knowledgeId}&num=0&ut=s&cpi=${CPI}&v=2025-0424-1038-4&mooc2=1&isMicroCourse=false&editorPreview=0&crossId=`;
+  // 服务端偶发返回没有 mArg 的页面，重试两次再跳过这一章
   let html = '';
-  try {
-    const r = await follow(cardsUrl, jar);
-    html = await r.res.text();
-  } catch (e) {
-    log(`  [${i + 1}/${chapters.length}] ${c.knowledgeId} 请求失败 ${String(e).slice(0, 80)}`);
-    continue;
+  let mArg = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const r = await follow(cardsUrl, jar);
+      html = await r.res.text();
+    } catch (e) {
+      if (attempt === 2) log(`  [${i + 1}/${chapters.length}] ${c.knowledgeId} 请求失败 ${String(e).slice(0, 60)}`);
+      await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
+      continue;
+    }
+    mArg = extractMarg(html);
+    if (mArg) break;
+    await new Promise((r) => setTimeout(r, 300 * (attempt + 1)));
   }
-  const mArg = extractMarg(html);
   if (!mArg) {
-    log(`  [${i + 1}/${chapters.length}] ${c.knowledgeId} 无 mArg（${html.length} 字节）`);
+    log(`  [${i + 1}/${chapters.length}] ${c.knowledgeId} 无 mArg（${html.length} 字节），已重试`);
     continue;
   }
   if (!reportUrlGlobal && mArg.defaults?.reportUrl) reportUrlGlobal = mArg.defaults.reportUrl;

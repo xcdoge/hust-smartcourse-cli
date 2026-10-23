@@ -119,9 +119,16 @@ func loadCourseList(c *Client, refresh bool) ([]CourseItem, error) {
 
 // switchCourse 按序号切课程：写 target.json，并在快照不匹配时重抓
 func switchCourse(c *Client, id int) (Target, error) {
-	list, err := loadCourseList(c, false)
+	// 序号是按「用户刚看到的列表」算的，缓存可能是旧的（课程增减会改变顺序），
+	// 所以切课前先刷新一次；刷新失败才退回缓存。
+	list, err := loadCourseList(c, true)
 	if err != nil {
-		return Target{}, err
+		var cached []CourseItem
+		if e := readJSON(statePath("courses.json"), &cached); e != nil || len(cached) == 0 {
+			return Target{}, err
+		}
+		logf("列表刷新失败，用缓存（%d 门）", len(cached))
+		list = cached
 	}
 	if id < 1 || id > len(list) {
 		return Target{}, fmt.Errorf("序号 %d 超出范围（共 %d 门课）", id, len(list))

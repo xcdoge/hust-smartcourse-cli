@@ -53,7 +53,15 @@ func cmdScan() error {
 		ch := chapters[i]
 		var rows []ScanRow
 		for num := 0; num < 4; num++ {
-			m, err := fetchCards(c, t, ch.KnowledgeID, num)
+			// 服务端偶发返回没有 mArg 的页面，重试两次再放弃这个 tab
+			var m *mArg
+			var err error
+			for attempt := 0; attempt < 3; attempt++ {
+				if m, err = fetchCards(c, t, ch.KnowledgeID, num); err == nil {
+					break
+				}
+				sleepSec(0.3 * float64(attempt+1))
+			}
 			if err != nil {
 				break
 			}

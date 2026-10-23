@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync"
 )
 
 // Attachment 章节卡片里的一个任务点
@@ -196,11 +197,24 @@ func crawlCourse(c *Client, t Target) (*CourseSnapshot, error) {
 		works     []WorkPoint
 	}
 	results := make([]chapterResult, len(chapters))
+	var failMu sync.Mutex
+	failCount := 0
 	const workers = 8
 	parallelEach(len(chapters), workers, func(i int) {
 		ch := chapters[i]
-		m, err := fetchCards(c, t, ch.KnowledgeID, 0)
+		// 服务端偶发返回没有 mArg 的页面，重试几次；一次失败就放弃会丢掉整章任务点
+		var m *mArg
+		var err error
+		for attempt := 0; attempt < 3; attempt++ {
+			if m, err = fetchCards(c, t, ch.KnowledgeID, 0); err == nil {
+				break
+			}
+			sleepSec(0.3 * float64(attempt+1))
+		}
 		if err != nil {
+			failMu.Lock()
+			failCount++
+			failMu.Unlock()
 			if i < 3 {
 				logf("  章节 %s 抓取失败: %v", ch.KnowledgeID, err)
 			}
@@ -245,6 +259,14 @@ func crawlCourse(c *Client, t Target) (*CourseSnapshot, error) {
 		snap.Works = append(snap.Works, r.works...)
 	}
 
+	if failCount > 0 {
+		ratio := float64(failCount) / float64(len(chapters))
+		logf("有 %d/%d 个章节抓取失败", failCount, len(chapters))
+		if ratio >= 0.3 {
+			return nil, fmt.Errorf("%.0f%% 的章节抓取失败，稍后重试（服务器可能临时限流）", ratio*100)
+		}
+	}
+
 	passed := 0
 	total := 0
 	for _, v := range snap.Videos {
@@ -253,14 +275,15 @@ func crawlCourse(c *Client, t Target) (*CourseSnapshot, error) {
 			passed += v.AttDuration
 		}
 	}
+	// 抓空了就别覆盖已有快照，否则下一次 play 会以为这门课没任务点
+	if len(snap.Videos) == 0 && len(snap.Works) == 0 {
+		return nil, fmt.Errorf("没抓到任何任务点，保留原有 state/course.json 不动")
+	}
 	if err := writeJSON(statePath("course.json"), snap); err != nil {
 		return nil, err
 	}
 	logf("视频 %d 个（已通过 %d 个，总时长 %.2f 小时）| 作业 %d 个",
 		len(snap.Videos), countPassed(snap.Videos), float64(total)/3600, len(snap.Works))
-	if len(snap.Videos) == 0 && len(snap.Works) == 0 {
-		return nil, fmt.Errorf("没抓到任何任务点")
-	}
 	return &snap, nil
 }
 
