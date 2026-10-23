@@ -19,8 +19,6 @@ probe/**/*.json
 .DS_Store
 Thumbs.db
 
-# Go 构建产物
-/"cmd/
 
 # Go 构建产物
 go/hsc
