@@ -202,3 +202,5 @@ hsc quiz submit       # 检查后交卷
 ## License
 
 [MIT](LICENSE)
+
+版本变化见 [CHANGELOG.md](CHANGELOG.md)。
