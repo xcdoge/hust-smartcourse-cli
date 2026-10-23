@@ -427,11 +427,20 @@ func cmdQuizSubmit(only int) error {
 			filled++
 		}
 
-		action := strings.Replace(q.Action, "/mooc-ans/api/addStudentWorkNewWeb", "/mooc-ans/work/addStudentWorkNewWeb", 1)
-		if action == "" {
-			action = "/mooc-ans/work/addStudentWorkNewWeb"
+		// 页面的 form action 有三种形态，必须落到 /mooc-ans/work/ 而不是 /mooc-ans/api/
+		// （后者是 404，练习题页面给的就是相对地址，按页面路径解析会拼错）
+		action := q.Action
+		switch {
+		case action == "":
+			action = smartOrigin + "/mooc-ans/work/addStudentWorkNewWeb"
+		case strings.HasPrefix(action, "addStudentWorkNewWeb"):
+			action = smartOrigin + "/mooc-ans/work/" + action
+		case strings.Contains(action, "/mooc-ans/api/addStudentWorkNewWeb"):
+			action = strings.Replace(action, "/mooc-ans/api/addStudentWorkNewWeb", "/mooc-ans/work/addStudentWorkNewWeb", 1)
+			action = resolveURL(q.PageURL, action)
+		default:
+			action = resolveURL(q.PageURL, action)
 		}
-		action = resolveURL(q.PageURL, action)
 		sep := "?"
 		if strings.Contains(action, "?") {
 			sep = "&"

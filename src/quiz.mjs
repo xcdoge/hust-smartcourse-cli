@@ -234,9 +234,14 @@ async function submit() {
       if (!body.has('answertype' + x.qid)) body.set('answertype' + x.qid, String(x.qtype));
       filled++;
     }
-    let url = q.pageUrl ? new URL(q.action, q.pageUrl).toString() : abs(q.action);
-    // 页面里 action 是相对路径，浏览器由 version() 修正到 /mooc-ans/work/ 下
-    url = url.replace('/mooc-ans/api/addStudentWorkNewWeb', '/mooc-ans/work/addStudentWorkNewWeb');
+    // 页面的 form action 有三种形态，必须落到 /mooc-ans/work/ 而不是 /mooc-ans/api/
+    // （后者是 404：练习题给的是相对地址 addStudentWorkNewWeb?...，按页面路径解析会拼错）
+    let url;
+    if (!q.action) url = `${SMART_ORIGIN}/mooc-ans/work/addStudentWorkNewWeb`;
+    else if (q.action.startsWith('addStudentWorkNewWeb')) url = `${SMART_ORIGIN}/mooc-ans/work/${q.action}`;
+    else if (q.action.includes('/mooc-ans/api/addStudentWorkNewWeb'))
+      url = new URL(q.action.replace('/mooc-ans/api/addStudentWorkNewWeb', '/mooc-ans/work/addStudentWorkNewWeb'), q.pageUrl).toString();
+    else url = new URL(q.action, q.pageUrl || SMART_ORIGIN).toString();
     url += '&ua=pc&formType=post&saveStatus=1&pos=&version=1';
     let resp;
     try {
