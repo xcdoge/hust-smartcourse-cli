@@ -138,8 +138,8 @@ async function dump() {
       continue;
     }
     const title = (text.match(/<title>([^<]*)<\/title>/) || [])[1] || '';
-    if (/已批阅/.test(title)) {
-      console.log(`${i + 1}/${works.length} 已完成，跳过 ${w.title.slice(0, 20)}`);
+    if (/已批阅|查看作业/.test(title)) {
+      console.log(`${i + 1}/${works.length} 已提交，跳过 ${w.title.slice(0, 20)}`);
       continue;
     }
     const questions = parseQuiz(text);
@@ -152,6 +152,10 @@ async function dump() {
       if (nm) hidden[nm] = vl.replace(/&amp;/g, '&');
     }
     out.push({ index: out.length, work: w, action, pageUrl, hidden, questions });
+    if (title.trim() === '500' || text.length < 3000) {
+      console.log(`${i + 1}/${works.length} 平台返回错误页（标题 ${title.trim() || '空'}，${text.length} 字节），跳过 ${w.title.slice(0, 20)}`);
+      continue;
+    }
     console.log(`${i + 1}/${works.length} ${questions.length}题 ${w.title.slice(0, 24)}`);
     await sleep(200);
   }
@@ -258,7 +262,13 @@ async function submit() {
       resp = { status: -1, err: String(e).slice(0, 120) };
     }
     const ok = resp.data?.status === true;
-    console.log(`[${q.index}] 填 ${filled}/${q.questions.length} 题 -> HTTP${resp.status} status=${resp.data?.status} msg=${resp.data?.msg || ''}`);
+    if (!resp.data && /^\s*</.test(resp.text || '')) {
+      const t = ((resp.text || '').match(/<title>([^<]*)<\/title>/) || [])[1] || '无标题';
+      const why = /查看作业|已提交|已批阅/.test(resp.text) ? '作业已提交过，不能重复提交' : `平台返回 HTML 错误页（标题 ${t.trim()}）`;
+      console.log(`[${q.index}] 提交失败: ${why}`);
+    } else {
+      console.log(`[${q.index}] 填 ${filled}/${q.questions.length} 题 -> HTTP${resp.status} status=${resp.data?.status} msg=${resp.data?.msg || ''}`);
+    }
     results.push({ index: q.index, ok, filled, resp });
     await sleep(1500);
   }

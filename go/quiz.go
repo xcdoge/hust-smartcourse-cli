@@ -259,8 +259,13 @@ func cmdQuizDump() error {
 		if m := regexp.MustCompile(`<title>([^<]*)</title>`).FindStringSubmatch(html); m != nil {
 			title = m[1]
 		}
-		if strings.Contains(title, "已批阅") {
-			logf("  跳过（已批阅） %s", truncate(r.Title, 24))
+		// 平台对不同状态返回不同标题：查看作业=已提交，500=服务端异常
+		if strings.Contains(title, "已批阅") || strings.Contains(title, "查看作业") {
+			logf("  跳过（已提交） %s", truncate(r.Title, 24))
+			continue
+		}
+		if strings.TrimSpace(title) == "500" || len(html) < 3000 {
+			logf("  跳过（平台返回错误页，标题 %s，%d 字节） %s", firstNonEmpty(title, "空"), len(html), truncate(r.Title, 20))
 			continue
 		}
 		if os.Getenv("HSC_DUMP_QUIZ_HTML") != "" {
@@ -343,7 +348,7 @@ func cmdQuizSubmit(only int) error {
 	}
 	answers := map[string]map[string]Answer{}
 	if err := readJSON(statePath("answers.json"), &answers); err != nil {
-		return fmt.Errorf(`缺少 state/answers.json，格式 {"<index>": {"<qid>": "A"}}`)
+		return fmt.Errorf("没有 state/answers.json，先执行 hsc quiz solve 或手动写一份")
 	}
 
 	okCount, skipCount, failCount := 0, 0, 0
@@ -446,6 +451,18 @@ func cmdQuizSubmit(only int) error {
 			failCount++
 			continue
 		}
+		if strings.HasPrefix(strings.TrimSpace(msg), "<") {
+			failCount++
+			reason := "平台返回 HTML 错误页"
+			if m := regexp.MustCompile(`<title>([^<]*)</title>`).FindStringSubmatch(msg); m != nil {
+				reason += "（标题 " + strings.TrimSpace(m[1]) + "）"
+			}
+			if regexp.MustCompile(`查看作业|已提交|已批阅`).MatchString(msg) {
+				reason = "作业已提交过，不能重复提交"
+			}
+			logf("[%d] 提交失败: %s", q.Index, reason)
+			continue
+		}
 		ok := strings.Contains(msg, `"status":true`) || strings.Contains(msg, "success")
 		if ok {
 			okCount++
@@ -455,6 +472,10 @@ func cmdQuizSubmit(only int) error {
 			logf("[%d] 失败 -> %s", q.Index, truncate(msg, 80))
 		}
 		sleepSec(0.3)
+	}
+	if okCount+skipCount+failCount == 0 {
+		logf("没有可提交的测验（state/quizzes.json 里没有未完成的）")
+		return nil
 	}
 	logf("提交完成：成功 %d，跳过 %d，失败 %d", okCount, skipCount, failCount)
 	return nil
