@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const version = "1.4.0"
+const version = "1.5.0"
 
 func usage() {
 	fmt.Print(`用法: hsc <命令> [参数]
