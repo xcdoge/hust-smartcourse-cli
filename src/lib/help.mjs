@@ -111,9 +111,10 @@ export const HELP = {
 
 子命令:
   dump      抓题，写 state/quizzes.json
-  solve     调 [llm] 配置的接口自动作答
+  solve     调 [llm] 配置的接口自动作答（支持题库缓存）
   submit    按 answers.json 交卷
   peek      查看批阅结果
+  bank      查看或清空题库缓存
 
 选项:
   --id=N      临时切换到第 N 门课

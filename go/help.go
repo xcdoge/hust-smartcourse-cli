@@ -190,17 +190,23 @@ var commandHelp = map[string]string{
   solve     调 [llm] 配置的接口自动作答，写 state/answers.json
   submit    按 answers.json 交卷（只交未完成的）
   peek      查看已有批阅结果
+  bank      查看或清空题库缓存
 
 选项:
   --id=N      临时切换到第 N 门课
   --only=N    只处理第 N 份测验（dump/solve/submit/peek 都支持）
   -h, --help  显示本帮助
 
+题库缓存:
+  solve 会把答过的题存到 state/qbank.json，重刷同一门课直接命中，不再调接口。
+  选项类题存的是选项文本，题库复用时会按文本反查当前字母，选项乱序也不会错。
+
 示例:
   hsc quiz dump
   hsc quiz solve --only=0
-  hsc quiz submit
-  hsc quiz peek --only=0`,
+  hsc quiz solve --no-cache
+  hsc quiz bank
+  hsc quiz submit`,
 
 	"captcha-test": `用法: hsc captcha-test
 

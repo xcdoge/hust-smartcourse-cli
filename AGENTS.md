@@ -119,6 +119,10 @@ export GOTMPDIR=$GOPATH/tmp
 **改自动答题**：`go/quiz_llm.go` 的提示词和 `parseAnswer`，Node 侧在 `src/solve.mjs`，
 两边的题型归一（choice/multi/judge/fill/essay）必须一致。
 
+**题库缓存**：`go/quiz_bank.go` 与 `src/lib/bank.mjs`。键是 qid，值里存题干指纹
+（防 qid 复用）和**选项文本**。复用时必须按文本反查当前字母，不能直接回放字母——
+老师可以开选项乱序，字母是位置标签。
+
 ## 已知约束（踩过的坑，别再踩）
 
 1. **`playTime` 是毫秒，`attDuration` 是秒**。混用会让部分观看的视频从 349000 起报，

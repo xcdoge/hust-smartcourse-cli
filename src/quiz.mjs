@@ -273,6 +273,28 @@ if (isMain) {
   if (mode === 'dump') { requireTarget(); ensureSession(); await dump(); }
   else if (mode === 'submit') { requireTarget(); ensureSession(); await submit(); }
   else if (mode === 'peek') { requireTarget(); ensureSession(); await peek(Number(argv.only || 0)); }
+  else if (mode === 'bank') {
+    const { loadBank, saveBank, BANK_FILE_PATH } = await import('./lib/bank.mjs');
+    if (argv.clear !== undefined || process.argv.includes('--clear') || process.argv.includes('-c')) {
+      saveBank({});
+      console.log('题库缓存已清空');
+    } else {
+      const b = loadBank();
+      const n = Object.keys(b).length;
+      if (!n) {
+        console.log('题库为空，跑 node src/quiz.mjs solve 会自动积累');
+      } else {
+        const count = {};
+        for (const e of Object.values(b)) count[e.kind] = (count[e.kind] || 0) + 1;
+        console.log(`题库共 ${n} 题  ${BANK_FILE_PATH}`);
+        for (const k of ['choice', 'multi', 'judge', 'fill', 'essay']) {
+          if (count[k]) console.log(`  ${k.padEnd(7)} ${count[k]}`);
+        }
+        console.log('');
+        console.log('清空: node src/quiz.mjs bank --clear    跳过缓存: node src/quiz.mjs solve --no-cache');
+      }
+    }
+  }
   else if (mode === 'solve') {
     const { runSolve } = await import('./solve.mjs');
     try {
@@ -281,5 +303,5 @@ if (isMain) {
       console.error('hsc:', e.message || e);
       process.exit(1);
     }
-  } else console.log('用法: node src/quiz.mjs dump | solve | submit [--only=N] | peek --only=N');
+  } else console.log('用法: node src/quiz.mjs dump | solve | submit [--only=N] | peek --only=N | bank [--clear]');
 }

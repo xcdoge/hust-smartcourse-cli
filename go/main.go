@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const version = "1.3.0"
+const version = "1.4.0"
 
 func usage() {
 	fmt.Print(`用法: hsc <命令> [参数]
@@ -29,7 +29,7 @@ func usage() {
 任务点
   play [--all] [--id=N] [--speed=N] [--tick=N] [--limit=N] [--objectid=X] [--dry] [--debug]
   doc  [--all]
-  quiz <dump|solve|submit|peek> [--id=N] [--only=N]
+  quiz <dump|solve|submit|peek|bank> [--id=N] [--only=N]
 
 其他
   captcha-test          用标注样本测试验证码识别准确率

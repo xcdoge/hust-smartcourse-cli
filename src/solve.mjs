@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadConfig, maskKey, CONFIG_PATH } from './lib/config.mjs';
+import { loadBank, saveBank, answerFromBank, storeAnswer } from './lib/bank.mjs';
 
 import { maybeHelp } from './lib/help.mjs';
 maybeHelp('solve.mjs');
@@ -155,8 +156,10 @@ async function solveOne(cfg, q, kind) {
 export async function runSolve() {
   const args = process.argv.slice(2);
   let only = -1;
+  let noCache = false;
   const types = new Set();
   for (const a of args) {
+    if (a === '--no-cache') noCache = true;
     if (a.startsWith('--only=')) only = Number(a.slice(7));
     if (a.startsWith('--types=')) a.slice(8).split(',').forEach((t) => t.trim() && types.add(t.trim()));
   }
@@ -172,12 +175,14 @@ export async function runSolve() {
 
   const answersFile = path.join(STATE, 'answers.json');
   const answers = fs.existsSync(answersFile) ? JSON.parse(fs.readFileSync(answersFile, 'utf8')) : {};
+  const bank = loadBank();
 
   const allowed = (kind) => (types.size ? types.has(kind) : cfg.quiz.types.includes(kind));
 
   let total = 0;
   let ok = 0;
   let failed = 0;
+  let hits = 0;
   for (const q of quizzes) {
     if (only >= 0 && q.index !== only) continue;
     const key = String(q.index);
@@ -187,9 +192,22 @@ export async function runSolve() {
       const kind = questionKind(qq);
       if (!allowed(kind)) continue;
       total++;
+
+      if (!noCache) {
+        const cached = answerFromBank(bank, qq, kind);
+        if (cached !== null) {
+          hits++;
+          answers[key][qq.qid] = cached;
+          ok++;
+          console.log(`  ${qq.qid} ${kind} -> ${Array.isArray(cached) ? JSON.stringify(cached) : cached}（题库）`);
+          continue;
+        }
+      }
+
       try {
         const ans = await solveOne(cfg, qq, kind);
         answers[key][qq.qid] = ans;
+        storeAnswer(bank, qq, kind, ans);
         ok++;
         console.log(`  ${qq.qid} ${kind} -> ${Array.isArray(ans) ? JSON.stringify(ans) : ans}`);
       } catch (e) {
@@ -201,7 +219,8 @@ export async function runSolve() {
   }
 
   fs.writeFileSync(answersFile, JSON.stringify(answers, null, 2));
-  console.log(`\n作答 ${total} 题，成功 ${ok}，失败 ${failed}，已写 state/answers.json`);
+  saveBank(bank);
+  console.log(`\n作答 ${total} 题，成功 ${ok}（题库命中 ${hits}），失败 ${failed}，已写 state/answers.json`);
   if (ok > 0) console.log('下一步：node src/quiz.mjs submit  （检查一下 answers.json 再交）');
 }
 

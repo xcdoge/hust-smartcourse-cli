@@ -157,8 +157,13 @@ retries = 2
 ```bash
 hsc config            # 查看当前配置（api_key 打码）
 hsc quiz solve        # 自动作答，写入 state/answers.json
+hsc quiz bank         # 查看题库缓存
 hsc quiz submit       # 检查后交卷
 ```
+
+答过的题会存进 `state/qbank.json`，重刷同一门课直接命中，几乎不消耗接口调用。
+选项类题存的是**选项文本**而不是字母，所以老师开了选项乱序也不会答错。
+`hsc quiz solve --no-cache` 可以跳过缓存重新问模型。
 
 简答题默认不答（`types` 里没有 `essay`）——这类题要人工批改，答了也拿不到分。
 答案会合并进已有的 `answers.json`，不会覆盖你手写的部分。

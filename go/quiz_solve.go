@@ -13,6 +13,7 @@ import (
 //	hsc quiz solve --types=choice,judge   限定题型
 func cmdQuizSolve(args []string) error {
 	var only = -1
+	noCache := false
 	typeFilter := map[string]bool{}
 
 	cfg, created, err := loadConfig()
@@ -25,6 +26,8 @@ func cmdQuizSolve(args []string) error {
 
 	for _, a := range args {
 		switch {
+		case a == "--no-cache":
+			noCache = true
 		case strings.HasPrefix(a, "--only="):
 			only = atoiOr(strings.TrimPrefix(a, "--only="), -1)
 		case strings.HasPrefix(a, "--types="):
@@ -52,6 +55,8 @@ func cmdQuizSolve(args []string) error {
 	answers := map[string]map[string]Answer{}
 	_ = readJSON(statePath("answers.json"), &answers)
 
+	bank := loadBank()
+
 	allowed := func(kind string) bool {
 		if len(typeFilter) > 0 {
 			return typeFilter[kind]
@@ -64,7 +69,7 @@ func cmdQuizSolve(args []string) error {
 		return false
 	}
 
-	total, ok, failed := 0, 0, 0
+	total, ok, failed, hits := 0, 0, 0, 0
 	for _, q := range quizzes {
 		if only >= 0 && q.Index != only {
 			continue
@@ -81,12 +86,25 @@ func cmdQuizSolve(args []string) error {
 				continue
 			}
 			total++
+
+			if !noCache {
+				if cached, hit := answerFromBank(bank, qq, kind); hit {
+					hits++
+					raw, _ := jsonMarshal(cached)
+					answers[key][qq.QID] = Answer(raw)
+					ok++
+					logf("  %s %s -> %s（题库）", qq.QID, kind, fmtAns(cached))
+					continue
+				}
+			}
+
 			ans, err := solveOne(cfg, qq, kind)
 			if err != nil {
 				failed++
 				logf("  %s %v", qq.QID, err)
 				continue
 			}
+			storeAnswer(bank, qq, kind, ans)
 			raw, _ := jsonMarshal(ans)
 			answers[key][qq.QID] = Answer(raw)
 			ok++
@@ -98,7 +116,10 @@ func cmdQuizSolve(args []string) error {
 	if err := writeJSON(statePath("answers.json"), answers); err != nil {
 		return err
 	}
-	logf("作答 %d 题，成功 %d，失败 %d，已写 state/answers.json", total, ok, failed)
+	if err := saveBank(bank); err != nil {
+		return err
+	}
+	logf("作答 %d 题，成功 %d（题库命中 %d），失败 %d，已写 state/answers.json", total, ok, hits, failed)
 
 	if cfg.Quiz.AutoSubmit && only < 0 {
 		logf("开始交卷…")
@@ -133,6 +154,14 @@ func solveOne(cfg *Config, q Question, kind string) (any, error) {
 		return ans, nil
 	}
 	return nil, lastErr
+}
+
+// fmtAns 把答案格式化成一行便于看日志
+func fmtAns(ans any) string {
+	if arr, ok := ans.([]string); ok {
+		return "[" + strings.Join(arr, ", ") + "]"
+	}
+	return fmt.Sprint(ans)
 }
 
 func jsonMarshal(v any) ([]byte, error) {

@@ -12,7 +12,7 @@ func cmdQuiz(args []string) error {
 	courseID := 0
 	for _, a := range args {
 		switch {
-		case a == "dump" || a == "submit" || a == "peek" || a == "solve":
+		case a == "dump" || a == "submit" || a == "peek" || a == "solve" || a == "bank":
 			sub = a
 		case strings.HasPrefix(a, "--id="):
 			courseID = atoiOr(strings.TrimPrefix(a, "--id="), 0)
@@ -39,6 +39,8 @@ func cmdQuiz(args []string) error {
 		return cmdQuizPeek(only)
 	case "solve":
 		return cmdQuizSolve(args)
+	case "bank":
+		return cmdQuizBank(args)
 	}
 	return fmt.Errorf("未知 quiz 子命令: %s", sub)
 }
