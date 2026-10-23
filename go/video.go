@@ -122,8 +122,37 @@ func fmtClip(dur float64) string {
 	return "0_" + fmtFloat(dur)
 }
 
+// playTimeSeconds 把卡片里的 playTime 归一成秒。
+//
+// 注意：mArg 里 playTime 是毫秒（349000 表示 349 秒），attDuration 是秒。
+// 直接当秒用会从 349000 开始上报，等于一步跳到结尾，服务端会判无效。
+func playTimeSeconds(v VideoPoint) float64 {
+	p := v.PlayTime
+	if p <= 0 {
+		return 0
+	}
+	if v.AttDuration > 0 && p > float64(v.AttDuration)*3 {
+		return p / 1000
+	}
+	if p > 100000 { // 超过 27 小时的"秒"显然不对，按毫秒处理
+		return p / 1000
+	}
+	return p
+}
+
 // playOne 把一个视频刷到通过
-func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, dry bool) error {
+func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, dry bool, debug bool) error {
+	// 先拉一次最新参数：otherInfo/attDurationEnc/playTime 都可能已经变了
+	if fresh, err := refreshedVideo(c, t, v); err == nil {
+		if fresh.PlayTime != v.PlayTime || fresh.OtherInfo != v.OtherInfo {
+			logf("  参数已更新 playTime %.0f -> %.0f", v.PlayTime, fresh.PlayTime)
+		}
+		v = fresh
+		if v.IsPassed {
+			logf("  服务端标记已通过，跳过")
+			return nil
+		}
+	}
 	st, err := videoMeta(c, v)
 	if err != nil {
 		return err
@@ -139,21 +168,31 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 		target = dur - 2
 	}
 	logf("%s  %.0fs  rt=%.2f", truncate(v.Title, 40), dur, rt)
+	if debug {
+		logf("  %s", describeReport(c, t, v, v.PlayTime, rt))
+	}
 	if dry {
 		logf("  (dry-run，不实际上报)")
 		return nil
 	}
 
 	step := math.Max(speed*tickSec, 20)
-	played := v.PlayTime
+	played := playTimeSeconds(v)
 	if played < 0 {
 		played = 0
+	}
+	// 服务端记录的进度不能超过时长；超了就从头开始（否则会被当成非法跳转）
+	if played >= target {
+		played = math.Max(target-step, 0)
 	}
 	for attempt := 0; attempt < 400; attempt++ {
 		played = math.Min(played+step, target)
 		passed, err := report(c, t, v, st, played, dur, rt)
 		if err != nil {
 			return err
+		}
+		if debug {
+			logf("  上报 %.0f/%.0f -> isPassed=%v", played, dur, passed)
 		}
 		if passed {
 			logf("  通过 playingTime=%.0f/%.0f", played, dur)
@@ -198,6 +237,7 @@ type playOpts struct {
 	Limit    int
 	ObjectID string
 	Dry      bool
+	Debug    bool
 }
 
 func cmdPlay(args []string) error {
@@ -208,6 +248,8 @@ func cmdPlay(args []string) error {
 			opts.All = true
 		case a == "--dry":
 			opts.Dry = true
+		case a == "--debug":
+			opts.Debug = true
 		case strings.HasPrefix(a, "--speed="):
 			opts.Speed = atofOr(strings.TrimPrefix(a, "--speed="), 1)
 		case strings.HasPrefix(a, "--tick="):
@@ -251,7 +293,7 @@ func cmdPlay(args []string) error {
 	ok, fail := 0, 0
 	for i, v := range todo {
 		logf("[%d/%d]", i+1, len(todo))
-		if err := playOne(c, snap.Target, v, opts.Speed, opts.Tick, opts.Dry); err != nil {
+		if err := playOne(c, snap.Target, v, opts.Speed, opts.Tick, opts.Dry, opts.Debug); err != nil {
 			logf("  失败: %v", err)
 			fail++
 			continue
