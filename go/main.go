@@ -23,6 +23,7 @@ func usage() {
   cred <save|show|status|forget>
 
 课程
+  init [课程链接]       生成 state/target.json（可直接贴课程 URL 自动解析）
   course                抓课程结构（章节/视频/文档/测验）
   scan                  逐 tab 全量扫描（含练习题）
 
@@ -56,6 +57,8 @@ func runCommand(args []string) error {
 		return cmdLogout(rest)
 	case "cred":
 		return cmdCred(rest)
+	case "init":
+		return cmdInit(rest)
 	case "course":
 		return cmdCourse()
 	case "scan":
