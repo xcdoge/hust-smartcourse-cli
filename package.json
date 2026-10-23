@@ -26,7 +26,8 @@
     "doc": "node src/doc.mjs",
     "play": "node src/play.mjs",
     "quiz": "node src/quiz.mjs",
-    "test": "node test/mock-play.mjs"
+    "test": "node test/mock-play.mjs",
+    "logout": "node src/logout.mjs"
   },
   "dependencies": {
     "qrcode": "^1.5.4"

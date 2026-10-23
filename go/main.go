@@ -19,6 +19,7 @@ func usage() {
   login-pw [--manual]   账密登录（内置验证码识别，失败自动换图重试）
   login-pw --code=1234  配合 --manual：带验证码提交
   check                 会话体检
+  logout [--all]        退出登录（--all 连凭据一起清）
   cred <save|show|status|forget>
 
 课程
@@ -51,6 +52,8 @@ func runCommand(args []string) error {
 		return cmdLoginPw(rest)
 	case "check":
 		return cmdCheck()
+	case "logout":
+		return cmdLogout(rest)
 	case "cred":
 		return cmdCred(rest)
 	case "course":

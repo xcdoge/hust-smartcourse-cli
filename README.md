@@ -54,6 +54,7 @@ cd hust-smartcourse-cli && npm install
 hsc login-qr          # 扫码：生成 state/login-qr.png，企业微信扫一下
 hsc login-pw          # 账密：自动识别验证码，失败换图重试
 hsc cred save <学号> <密码>   # 先把凭据加密存本地，再跑 login-pw
+hsc logout [--all]    # 退出登录：清 cookie；--all 连凭据一起清
 ```
 
 凭据用 AES-256-GCM 加密、密钥由「主机名 + 用户名」派生，**换机器就解不开**。
@@ -102,6 +103,7 @@ hsc quiz peek --only=0                         # 看批阅页
 | --- | --- |
 | `login-qr` / `login-pw` | 扫码登录 / 账密登录 |
 | `cred save\|show\|status\|forget` | 凭据加密管理 |
+| `logout [--all]` | 退出登录（清 cookie；`--all` 连凭据一起清）|
 | `check` | 会话体检 |
 | `course` | 抓课程结构 |
 | `scan` | 逐 tab 扫描，找齐所有任务点 |
