@@ -67,7 +67,7 @@ func main() {
 	case "captcha-test":
 		err = cmdCaptchaTest()
 	case "version", "-v", "--version":
-		fmt.Println("hsc 1.0.0")
+		fmt.Println("hsc 1.1.0")
 	case "help", "-h", "--help":
 		usage()
 	default:

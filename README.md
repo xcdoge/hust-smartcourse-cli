@@ -119,7 +119,7 @@ npm install
 | 版本 | 目录 | 运行方式 | 产物 |
 | --- | --- | --- | --- |
 | **Node 版**（主力，功能最全） | `src/` | 需要 Node ≥ 18 | — |
-| **Go 版**（单文件 exe） | `go/` | 不需要任何运行时 | **约 11 MB 的 `hsc.exe`** |
+| **Go 版**（单文件 exe） | `go/` | 不需要任何运行时 | **约 8 MB 的 `hsc.exe`** |
 
 两个版本共用同一个 `state/` 目录（cookie、加密凭据、课程快照格式一致，可混用），
 加密凭据互相兼容。想要"下载即用、双击就跑"，用 Go 版：
@@ -132,7 +132,9 @@ go build -o hsc.exe .     # 需要 Go ≥ 1.21
 ```
 
 > 为什么 Go 版能这么小：Node 版打包成 exe 得把整个 V8 塞进去（~90 MB），
-> 而 Go 静态链接的二进制带运行时也只有 11 MB。Go 版的实现细节见 [go/README.md](go/README.md)。
+> 而 Go 静态链接的二进制带运行时也只有 8 MB。Go 版的实现细节见 [go/README.md](go/README.md)。
+>
+> 不想自己编译？直接去 [Releases](https://github.com/xcdoge/hust-smartcourse-cli/releases) 下载各平台预编译版。
 
 ## 快速开始
 
