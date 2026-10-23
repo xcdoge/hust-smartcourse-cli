@@ -6,6 +6,11 @@ import { loadConfig, maskKey, CONFIG_PATH, DEFAULT_CONFIG_TOML } from './lib/con
 
 import { maybeHelp } from './lib/help.mjs';
 maybeHelp('config');
+if (process.argv.length <= 2) {
+  const { HELP } = await import('./lib/help.mjs');
+  console.log(HELP.config);
+  process.exit(0);
+}
 
 const sub = process.argv[2] || 'show';
 

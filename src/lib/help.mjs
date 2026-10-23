@@ -35,6 +35,8 @@ export const HELP = {
 
   cred: `用法: node src/cred.mjs <子命令>
 
+不带子命令时显示本帮助。
+
 账号密码加密管理（AES-256-GCM + scrypt，密钥绑机器）。
 
 子命令:
@@ -46,7 +48,9 @@ export const HELP = {
 选项:
   -h, --help   显示本帮助`,
 
-  config: `用法: node src/config.mjs [show|init]
+  config: `用法: node src/config.mjs <show|init>
+
+不带子命令时显示本帮助。
 
 查看或生成 state/config.toml（自动答题的接口配置）。
 
@@ -106,7 +110,9 @@ export const HELP = {
   --id=N        临时切换到第 N 门课
   -h, --help    显示本帮助`,
 
-  quiz: `用法: node src/quiz.mjs <dump|solve|submit|peek> [--id=N] [--only=N]
+  quiz: `用法: node src/quiz.mjs <dump|solve|submit|peek|bank> [--id=N] [--only=N]
+
+不带子命令时显示本帮助。
 
 测验与练习题。
 

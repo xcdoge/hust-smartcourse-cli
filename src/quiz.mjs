@@ -323,5 +323,8 @@ if (isMain) {
       console.error('hsc:', e.message || e);
       process.exit(1);
     }
-  } else console.log('用法: node src/quiz.mjs dump | solve | submit [--only=N] | peek --only=N | bank [--clear]');
+  } else {
+    const { HELP } = await import('./lib/help.mjs');
+    console.log(HELP.quiz);
+  }
 }

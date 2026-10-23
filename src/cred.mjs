@@ -10,6 +10,12 @@ import { saveCreds, loadEncrypted, loadPlaintext, loadCreds, hasCreds, forget, m
 
 import { maybeHelp } from './lib/help.mjs';
 maybeHelp('cred');
+// 没给子命令时显示帮助，别默认成某个动作
+if (process.argv.length <= 2) {
+  const { HELP } = await import('./lib/help.mjs');
+  console.log(HELP.cred);
+  process.exit(0);
+}
 
 const [cmd, ...args] = process.argv.slice(2);
 

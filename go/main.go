@@ -56,6 +56,15 @@ func runCommand(args []string) error {
 		return nil
 	}
 
+	// 需要子命令的命令，不带参数时直接显示帮助，不要猜一个默认动作
+	if len(rest) == 0 {
+		switch cmd {
+		case "quiz", "cred", "config":
+			printCommandHelp(cmd)
+			return nil
+		}
+	}
+
 	switch cmd {
 	case "login-qr":
 		return cmdLoginQR(rest)

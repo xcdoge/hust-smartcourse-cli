@@ -61,6 +61,8 @@ var commandHelp = map[string]string{
 
 	"cred": `用法: hsc cred <子命令>
 
+不带子命令时显示本帮助。
+
 账号密码加密管理。加密用 AES-256-GCM，密钥由 scrypt 从机器信息派生，
 换机器或换用户就解不开。
 
@@ -77,7 +79,9 @@ var commandHelp = map[string]string{
   hsc cred save 2026xxxxxx 你的密码
   hsc cred status`,
 
-	"config": `用法: hsc config [show|init]
+	"config": `用法: hsc config <show|init>
+
+不带子命令时显示本帮助。
 
 查看或生成 state/config.toml。自动答题（quiz solve）的接口配置在这里。
 
@@ -182,7 +186,9 @@ var commandHelp = map[string]string{
 示例:
   hsc doc --all`,
 
-	"quiz": `用法: hsc quiz <dump|solve|submit|peek> [--id=N] [--only=N]
+	"quiz": `用法: hsc quiz <dump|solve|submit|peek|bank> [--id=N] [--only=N]
+
+不带子命令时显示本帮助。
 
 测验与练习题。
 
