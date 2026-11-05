@@ -39,7 +39,10 @@ func initPaths() error {
 	if err := os.MkdirAll(stateDir, 0o755); err != nil {
 		return err
 	}
-	return migrateState()
+	if err := migrateState(); err != nil {
+		return err
+	}
+	return ensureStateDirs()
 }
 
 // state/ 下按用途分子目录，避免十几个文件平铺在一起
@@ -59,6 +62,22 @@ var stateLayout = map[string]string{
 	"quiz-readable.txt": "quiz",
 	"play.log":          "logs",
 	"config.toml":       "", // 全局配置留在顶层
+}
+
+// ensureStateDirs 创建布局中声明的所有状态子目录。
+// 这一步独立于迁移逻辑，确保全新安装也能直接写入子目录。
+func ensureStateDirs() error {
+	seen := map[string]bool{}
+	for _, sub := range stateLayout {
+		if sub == "" || seen[sub] {
+			continue
+		}
+		seen[sub] = true
+		if err := os.MkdirAll(filepath.Join(stateDir, sub), 0o755); err != nil {
+			return fmt.Errorf("创建状态目录 %s 失败: %w", sub, err)
+		}
+	}
+	return nil
 }
 
 // migrateState 把旧的平铺文件搬进子目录；已经在新位置的跳过

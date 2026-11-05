@@ -29,7 +29,7 @@ func finishLogin(c *Client, t Target) error {
 	if err := c.Jar.Save(); err != nil {
 		return err
 	}
-	fmt.Printf("登录成功，cookie 已写入 state/cookies.json (%s)\n", truncate(status, 40))
+	fmt.Printf("登录成功，cookie 已写入 %s (%s)\n", statePath("cookies.json"), truncate(status, 40))
 
 	// 没有课程配置时，登录到此为止（选课是下一步的事）
 	if t.CourseID == "" {

@@ -13,7 +13,7 @@ func usage() {
 	fmt.Print(`用法: hsc <命令> [参数]
 
 登录
-  login-qr              扫码登录，二维码写入 state/login-qr.png
+  login-qr              扫码登录，二维码写入 state/auth/login-qr.png
   login-pw [--manual]   账密登录，自动识别验证码
   login-pw --code=NNNN  手动指定验证码，配合 --manual
   check                 检查当前会话是否有效

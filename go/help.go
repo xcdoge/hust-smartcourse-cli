@@ -10,8 +10,8 @@ import (
 var commandHelp = map[string]string{
 	"login-qr": `用法: hsc login-qr
 
-扫码登录。二维码写到 state/login-qr.png，用企业微信扫。
-登录成功后 cookie 存到 state/cookies.json。
+扫码登录。二维码写到 state/auth/login-qr.png，用企业微信扫。
+登录成功后 cookie 存到 state/auth/cookies.json。
 
 选项:
   -h, --help   显示本帮助
@@ -48,7 +48,7 @@ var commandHelp = map[string]string{
 
 清除登录态，并通知 CAS 注销。
 
-默认只删 state/cookies.json，保留加密凭据。
+默认只删 state/auth/cookies.json，保留加密凭据。
 加 --all 连凭据一起删。
 
 选项:

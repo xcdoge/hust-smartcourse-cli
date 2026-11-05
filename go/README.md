@@ -6,7 +6,7 @@
 
 | 命令 | 说明 |
 | --- | --- |
-| `hsc login-qr` | 扫码登录（生成 `state/login-qr.png`） |
+| `hsc login-qr` | 扫码登录（生成 `state/auth/login-qr.png`） |
 | `hsc login-pw` | 账密登录（内置验证码识别，失败自动换图重试） |
 | `hsc cred save/show/status/forget` | 凭据加密管理（与 Node 版互相兼容） |
 | `hsc check` | 会话体检 |
