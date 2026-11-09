@@ -36,6 +36,7 @@ go/                    Go 版（module 名是 hsc）
   creds.go / cred_cmd.go 凭据加密
   data/captcha-model.json  验证码模型（go:embed）
 src/                   Node 版
+  cli.mjs              交互模式（npm start），按命令名 spawn 对应脚本
   lib/quiz-parse.mjs   题目解析
   lib/player.mjs       播放核心（可注入 base，便于 mock 测试）
   lib/const.mjs        路径与课程参数
@@ -104,6 +105,9 @@ export GOTMPDIR=$GOPATH/tmp
 ## 改动的常见姿势
 
 **加一个命令**：`go/main.go` 的 `switch` 里加分支 + 写实现文件 + 在 `src/` 里补对应用法 + 更新 README 命令表。
+
+**Node 交互模式**：`src/cli.mjs` 用 readline 做提示符，命令表 `COMMANDS` 映射到脚本，
+内部 `spawnSync` 调用（这样各脚本的 `const.mjs` 初始化照常跑）。新增命令时往表里加一行。
 
 **帮助文本**：每个命令都必须支持 `-h`/`--help`。Go 侧文本集中在 `go/help.go` 的
 `commandHelp`，`hsc help <命令>` 复用同一份；Node 侧在 `src/lib/help.mjs`，

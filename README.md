@@ -99,6 +99,13 @@ hsc quiz peek --only=0                         # 看批阅页
 
 > 多选**连写**（`"ABD"`），判断填 `"true"/"false"`，填空填**字符串数组**（每空一项）。
 
+Node 版也有交互模式，用法和 exe 一致：
+
+```bash
+npm start              # 等价于 node src/cli.mjs
+node src/cli.mjs play --all    # 也可以一次性执行
+```
+
 任何命令加 `--help` 都能看详细用法：
 
 ```bash

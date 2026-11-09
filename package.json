@@ -30,7 +30,9 @@
     "logout": "node src/logout.mjs",
     "init": "node src/init.mjs",
     "config": "node src/config.mjs",
-    "solve": "node src/solve.mjs"
+    "solve": "node src/solve.mjs",
+    "start": "node src/cli.mjs",
+    "cli": "node src/cli.mjs"
   },
   "dependencies": {
     "qrcode": "^1.5.4"
