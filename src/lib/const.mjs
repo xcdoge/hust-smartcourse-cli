@@ -30,6 +30,14 @@ export function stateFile(name) {
   return sub ? path.join(STATE, sub, name) : path.join(STATE, name);
 }
 
+// 全新安装时子目录还不存在，先建好（对应 Go 侧的 ensureStateDirs）
+try {
+  fs.mkdirSync(STATE, { recursive: true });
+  for (const sub of new Set(Object.values(LAYOUT))) {
+    if (sub) fs.mkdirSync(path.join(STATE, sub), { recursive: true });
+  }
+} catch {}
+
 // 把旧版平铺的文件搬进子目录
 try {
   for (const [name, sub] of Object.entries(LAYOUT)) {

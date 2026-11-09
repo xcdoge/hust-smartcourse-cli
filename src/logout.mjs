@@ -43,7 +43,7 @@ try {
 const removed = [];
 for (const [name, p] of [
   ['cookies.json', COOKIES],
-  ['visitor.json', `stateFile('visitor.json')`],
+  ['visitor.json', stateFile('visitor.json')],
 ]) {
   if (remove(p)) removed.push(name);
 }
@@ -51,8 +51,8 @@ for (const [name, p] of [
 // 3. --all 连凭据一起清
 if (all) {
   for (const [name, p] of [
-    ['cred.enc.json', `stateFile('cred.enc.json')`],
-    ['cred.txt', `stateFile('cred.txt')`],
+    ['cred.enc.json', stateFile('cred.enc.json')],
+    ['cred.txt', stateFile('cred.txt')],
   ]) {
     if (remove(p)) removed.push(name);
   }

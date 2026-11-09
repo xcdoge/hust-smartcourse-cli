@@ -58,6 +58,6 @@ for (const r of rows) {
 const anyOk = rows.some((r) => r.verdict === '可用');
 if (!anyOk) {
   const dump = rows.map((r) => `${r.name} ${r.status} ${r.final}`).join('\n');
-  fs.writeFileSync(`stateFile('probe-session.log')`, dump + '\n');
+  fs.writeFileSync(stateFile('probe-session.log'), dump + '\n');
 }
 console.log(anyOk ? '\n结论：会话可用' : '\n结论：会话不可用，需要重新抓 cookie');

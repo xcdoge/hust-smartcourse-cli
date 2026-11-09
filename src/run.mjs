@@ -85,7 +85,7 @@ log(`任务点: ${uniq.length} 个（视频 ${uniq.filter((p) => p.type === '视
 uniq.slice(0, 20).forEach((p) => log(`  [${p.type}] objectid=${p.objectid} jobid=${p.jobid} knowledge=${p.knowledgeId || '-'}`));
 
 fs.writeFileSync(
-  `stateFile('course.json')`,
+  stateFile('course.json'),
   JSON.stringify({ fetchedAt: new Date().toISOString(), courseId: COURSE_ID, clazzId: CLAZZ_ID, points: uniq }, null, 2)
 );
 if (uniq.length === 0) {

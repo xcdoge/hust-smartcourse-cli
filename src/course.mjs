@@ -158,7 +158,7 @@ if (chapters.length === 0 || points.length === 0) {
 }
 
 fs.writeFileSync(
-  `stateFile('course.json')`,
+  stateFile('course.json'),
   JSON.stringify(
     { fetchedAt: new Date().toISOString(), courseId: COURSE_ID, clazzId: CLAZZ_ID, reportUrl: reportUrlGlobal, studyEnc, chapters, points, works },
     null,
