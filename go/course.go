@@ -282,8 +282,15 @@ func crawlCourse(c *Client, t Target) (*CourseSnapshot, error) {
 	if err := writeJSON(statePath("course.json"), snap); err != nil {
 		return nil, err
 	}
-	logf("视频 %d 个（已通过 %d 个，总时长 %.2f 小时）| 作业 %d 个",
-		len(snap.Videos), countPassed(snap.Videos), float64(total)/3600, len(snap.Works))
+	limited := 0
+	for _, v := range snap.Videos {
+		if speedLimited(v.OtherInfo) {
+			limited++
+		}
+	}
+	speedTag := speedSummary(limited, len(snap.Videos))
+	logf("视频 %d 个（已通过 %d 个，总时长 %.2f 小时）| 作业 %d 个 | %s",
+		len(snap.Videos), countPassed(snap.Videos), float64(total)/3600, len(snap.Works), speedTag)
 	return &snap, nil
 }
 

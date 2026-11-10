@@ -47,6 +47,26 @@ func videoMeta(c *Client, v VideoPoint) (*videoStatus, error) {
 }
 
 // courseRT 从 otherInfo 里读限速标记：rt_d → 0.9，rt_1 → 1
+// speedSummary 课程级摘要，如「全部支持倍速」「13 个限 1 倍速」
+func speedSummary(limited, total int) string {
+	switch {
+	case total == 0:
+		return "无任务点"
+	case limited == 0:
+		return "全部支持倍速"
+	case limited == total:
+		return "全部限 1 倍速"
+	default:
+		return fmt.Sprintf("%d 个限 1 倍速", limited)
+	}
+}
+
+// speedLimited 判断这个任务点是否被限制为 1 倍速（otherInfo 里 rt_1）
+func speedLimited(otherInfo string) bool {
+	m := reRT.FindStringSubmatch(otherInfo)
+	return len(m) >= 2 && m[1] == "1"
+}
+
 func courseRT(otherInfo string) float64 {
 	m := reRT.FindStringSubmatch(otherInfo)
 	if len(m) < 2 {
@@ -177,7 +197,17 @@ func playOne(c *Client, t Target, v VideoPoint, speed float64, tickSec float64, 
 		// 不限速：按倍速推进
 		target = dur - 2
 	}
-	logf("%s  %.0fs  rt=%.2f", truncate(v.Title, 40), dur, rt)
+	limitTag := "支持倍速"
+	if speedLimited(v.OtherInfo) {
+		limitTag = "限 1 倍速"
+	}
+	logf("%s  %.0fs  rt=%.2f  %s", truncate(v.Title, 40), dur, rt, limitTag)
+
+	// 限速课倍速没用，直接按 1 倍跑，别让用户白等一晚上
+	if speedLimited(v.OtherInfo) && speed > 1 {
+		logf("  该任务点限 1 倍速，忽略 --speed=%g", speed)
+		speed = 1
+	}
 	if debug {
 		logf("  %s", describeReport(c, t, v, v.PlayTime, rt))
 	}
@@ -320,7 +350,23 @@ func cmdPlay(args []string) error {
 	for _, v := range todo {
 		totalMin += v.AttDuration
 	}
+	limitedTodo := 0
+	for _, v := range todo {
+		if speedLimited(v.OtherInfo) {
+			limitedTodo++
+		}
+	}
 	logf("待处理 %d 个，合计 %.2f 小时", len(todo), float64(totalMin)/3600)
+	if limitedTodo == 0 {
+		logf("倍速：这些任务点都支持")
+	} else if limitedTodo == len(todo) {
+		logf("倍速：全部限 1 倍速，--speed 不生效")
+	} else {
+		logf("倍速：%d 个限 1 倍速（按 1 倍播），%d 个支持", limitedTodo, len(todo)-limitedTodo)
+	}
+	if limitedTodo > 0 && opts.Speed > 1 {
+		logf("--speed=%g 只对支持倍速的任务点生效", opts.Speed)
+	}
 
 	ok, fail := 0, 0
 	for i, v := range todo {

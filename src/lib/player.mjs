@@ -1,6 +1,12 @@
 // 视频任务点播放核心（可注入 base，便于用 mock 服务端测试）
 import { videoStatus, reportLog, buildLogUrl } from './chaoxing.mjs';
 
+/** otherInfo 里 rt_1 表示限制 1 倍速 */
+export function speedLimited(otherInfo) {
+  const m = /rt_([0-9.]+|d)/.exec(otherInfo || '');
+  return !!m && m[1] === '1';
+}
+
 export const DEFAULT_BASE = 'https://smartcourse.hust.edu.cn/mooc-smartcourse';
 
 export function fidFromJar(jar) {
@@ -29,7 +35,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export async function playVideo(jar, point, opts = {}) {
   const base = opts.base || DEFAULT_BASE;
   const clazzId = opts.clazzId;
-  const speed = Number(opts.speed ?? 1.5);
+  const speedIn = Number(opts.speed ?? 1.5);
   const tickSec = Number(opts.tickSec ?? 15);
   const dry = !!opts.dry;
   const maxRounds = Number(opts.maxRounds ?? 20000);
@@ -52,7 +58,13 @@ export async function playVideo(jar, point, opts = {}) {
   if (!reportUrl || !dtoken || !duration) {
     return { ok: false, reason: `缺少字段 reportUrl=${!!reportUrl} dtoken=${!!dtoken} duration=${duration}` };
   }
-  log(`  时长 ${duration}s reportUrl=${reportUrl} dtoken=${String(dtoken).slice(0, 14)}…`);
+  const limited = speedLimited(point.otherInfo);
+  log(`  时长 ${duration}s reportUrl=${reportUrl} dtoken=${String(dtoken).slice(0, 14)}… ${limited ? '限 1 倍速' : '支持倍速'}`);
+  let speed = speedIn;
+  if (limited && speed > 1) {
+    log(`  该任务点限 1 倍速，忽略 speed=${speedIn}`);
+    speed = 1;
+  }
   if (st.data.isPassed === true || point.isPassed === true) return { ok: true, reason: '服务端已通过', duration };
 
   const begins = Number(point.begins ?? 0);

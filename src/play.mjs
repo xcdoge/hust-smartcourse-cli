@@ -63,6 +63,10 @@ if (argv.all === 'true') {
   if (argv.limit) points = points.slice(0, Number(argv.limit));
   const total = points.reduce((a, p) => a + (p.attDuration || 0), 0);
   log(`待处理 ${points.length} 个，合计 ${(total / 3600).toFixed(2)} 小时`);
+  const limitedTodo = points.filter((p) => /rt_1(-|$)/.test(p.otherInfo || '')).length;
+  if (limitedTodo === 0) log('倍速：这些任务点都支持');
+  else if (limitedTodo === points.length) log('倍速：全部限 1 倍速，--speed 不生效');
+  else log(`倍速：${limitedTodo} 个限 1 倍速（按 1 倍播），${points.length - limitedTodo} 个支持`);
 } else if (argv.objectid) {
   // 允许直接从 course.json 里按 objectId 找完整参数
   let meta = { objectid: argv.objectid, jobid: argv.jobid };
