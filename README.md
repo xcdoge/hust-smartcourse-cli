@@ -3,6 +3,7 @@
 [![Node](https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg)](https://nodejs.org/)
 [![Go](https://img.shields.io/badge/go-%3E%3D1.21-00ADD8.svg)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+![Downloads](https://img.shields.io/github/downloads/xcdoge/hust-smartcourse-cli/total?label=downloads)
 
 **[智慧华中大课程平台](https://smartcourse.hust.edu.cn) 任务点自动化工具**，纯 HTTP 实现，不启动浏览器。
 支持视频进度、文档/图片任务点、章节测验与练习题，登录支持企业微信扫码与账号密码（含验证码自动识别）。
@@ -207,15 +208,29 @@ hsc quiz submit       # 检查后交卷
 
 ## FAQ
 
-**会话多久过期？** 约 12 小时。重新登录即可，进度不丢，重跑自动跳过已完成。
+### 会话多久过期？
 
-**能不能快进？** 看课程配置。`rt_1` 的课服务端校验真实流逝时间，只能按 1 倍速。
+约 12 小时。重新登录即可，进度不丢，重跑自动跳过已完成。
 
-**为什么漏了练习题？** 章节有两个 tab，`num=1` 那页才是练习题。跑 `hsc scan`。
+### 能不能快进？
 
-**测验答案从哪来？** 程序不提供答案，`dump` 只负责抓题，`submit` 需要你填 `state/answers.json`。
+看课程配置。`rt_1` 的课服务端校验真实流逝时间，只能按 1 倍速。
 
-**为什么不用 Playwright？** 驱动真实浏览器需要子进程 + 命名管道，受限环境和 CI 里会 `spawn EPERM`。纯 HTTP 更稳，也能挂服务器上跑。
+### 为什么漏了练习题？
+
+章节有两个 tab，`num=1` 那页才是练习题。跑 `hsc scan`。
+
+### 测验答案从哪来？
+
+程序不提供答案，`dump` 只负责抓题，`submit` 需要你填 `state/answers.json`。
+
+### 为什么不用 Playwright？
+
+驱动真实浏览器需要子进程 + 命名管道，受限环境和 CI 里会 `spawn EPERM`。纯 HTTP 更稳，也能挂服务器上跑。
+
+## 鸣谢
+
+感谢[智慧树自动化学习cli](https://github.com/pjm314159/zhs)与[hust-cli](https://gitcode.com/BingyanStudio/hust-cli)提供的灵感。
 
 ## License
 
