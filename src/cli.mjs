@@ -15,8 +15,9 @@ const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'))
 
 // 命令 → 脚本；参数原样透传
 const COMMANDS = {
-  'login-qr': 'login-qr.mjs',
-  'login-pw': 'login-pw.mjs',
+  login: 'login.mjs',
+  'login-qr': 'login.mjs',
+  'login-pw': 'login.mjs',
   check: 'probe-session.mjs',
   logout: 'logout.mjs',
   cred: 'cred.mjs',
@@ -36,8 +37,9 @@ const USAGE = `hsc-node ${pkg.version}
 用法: node src/cli.mjs [命令] [参数]
 
 登录
-  login-qr              扫码登录，二维码写入 state/auth/login-qr.png
-  login-pw [--manual]   账密登录，自动识别验证码
+  login                 扫码登录（默认），二维码写入 state/auth/login-qr.png
+  login --pw            账密登录，自动识别验证码
+  login --pw --manual --code=NNNN   手动指定验证码
   check                 检查当前会话是否有效
   logout [--all]        清除登录态；--all 同时删除已存凭据
   cred <save|show|status|forget>

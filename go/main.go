@@ -13,9 +13,9 @@ func usage() {
 	fmt.Print(`用法: hsc <命令> [参数]
 
 登录
-  login-qr              扫码登录，二维码写入 state/auth/login-qr.png
-  login-pw [--manual]   账密登录，自动识别验证码
-  login-pw --code=NNNN  手动指定验证码，配合 --manual
+  login                 扫码登录（默认），二维码写入 state/auth/login-qr.png
+  login --pw            账号密码登录，自动识别验证码
+  login --pw --manual --code=NNNN   手动指定验证码
   check                 检查当前会话是否有效
   logout [--all]        清除登录态；--all 同时删除已存凭据
   cred <save|show|status|forget>
@@ -66,10 +66,10 @@ func runCommand(args []string) error {
 	}
 
 	switch cmd {
-	case "login-qr":
-		return cmdLoginQR(rest)
-	case "login-pw":
-		return cmdLoginPw(rest)
+	case "login":
+		return cmdLogin(rest)
+	case "login-qr", "login-pw": // 旧名，保留兼容
+		return cmdLogin(append([]string{"--" + strings.TrimPrefix(cmd, "login-")}, rest...))
 	case "check":
 		return cmdCheck()
 	case "logout":

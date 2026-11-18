@@ -53,7 +53,7 @@ func cmdInit(args []string) error {
 			return fmt.Errorf("参数 %q 既不是序号也不是课程链接", positional[0])
 		}
 		if !hasSession {
-			return fmt.Errorf("未登录，先执行 hsc login-qr 或 hsc login-pw")
+			return fmt.Errorf("未登录，先执行 hsc login（或 hsc login --pw）")
 		}
 		_, err = switchCourseOpt(c, n, !noScan)
 		return err
@@ -61,7 +61,7 @@ func cmdInit(args []string) error {
 
 	// ③ 无参数：列课程
 	if !hasSession {
-		return fmt.Errorf("未登录，先执行 hsc login-qr 或 hsc login-pw")
+		return fmt.Errorf("未登录，先执行 hsc login（或 hsc login --pw）")
 	}
 	// 列表一定要现拉：缓存里的顺序可能已经变了（退课/加课），
 	// 而紧接着的 `init <序号>` 会刷新，两边不一致就会切错课

@@ -104,6 +104,9 @@ export GOTMPDIR=$GOPATH/tmp
 
 ## 改动的常见姿势
 
+**登录入口**：对外只有 `hsc login`（Node：`node src/login.mjs`），
+`--pw` 切账密，`--qr` 显式扫码。旧名 `login-qr` / `login-pw` 只是转发，别再往里加逻辑。
+
 **加一个命令**：`go/main.go` 的 `switch` 里加分支 + 写实现文件 + 在 `src/` 里补对应用法 + 更新 README 命令表。
 
 **Node 交互模式**：`src/cli.mjs` 用 readline 做提示符，命令表 `COMMANDS` 映射到脚本，

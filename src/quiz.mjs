@@ -49,7 +49,7 @@ const jar = new CookieJar();
 let _loaded = false;
 function ensureSession() {
   if (_loaded) return;
-  if (!fs.existsSync(COOKIES)) throw new Error('未登录，先执行 node src/login-qr.mjs 或 node src/login-pw.mjs');
+  if (!fs.existsSync(COOKIES)) throw new Error('未登录，先执行 node src/login.mjs');
   jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
   _loaded = true;
 }

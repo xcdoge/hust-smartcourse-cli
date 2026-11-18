@@ -58,9 +58,9 @@ node src/cli.mjs play --all    # 也可以一次性执行某条命令
 ### 1. 登录
 
 ```bash
-hsc login-qr          # 扫码：生成 state/auth/login-qr.png，企业微信扫一下
-hsc login-pw          # 账密：自动识别验证码，失败换图重试
-hsc cred save <学号> <密码>   # 先把凭据加密存本地，再跑 login-pw
+hsc login                 # 扫码（默认）：生成 state/auth/login-qr.png，企业微信扫一下
+hsc login --pw            # 账密：自动识别验证码，失败换图重试
+hsc cred save <学号> <密码>   # 先把凭据加密存本地，再跑 login --pw
 hsc logout [--all]    # 退出登录：清 cookie；--all 连凭据一起清
 ```
 

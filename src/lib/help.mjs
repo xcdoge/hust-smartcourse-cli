@@ -1,22 +1,28 @@
 // 各脚本的 --help 文本。node src/xxx.mjs --help 打印对应内容。
 export const HELP = {
-  'login-qr': `用法: node src/login-qr.mjs
+  login: `用法: node src/login.mjs [--pw] [--qr]
 
-扫码登录。二维码写到 state/login-qr.png，用企业微信扫。
-登录成功后 cookie 存到 state/cookies.json。
-
-选项:
-  -h, --help   显示本帮助`,
-
-  'login-pw': `用法: node src/login-pw.mjs [--manual] [--code=NNNN]
-
-账号密码登录。需要先用 node src/cred.mjs save 存过凭据，或在 state/cred.txt 写两行。
-验证码由内置模型识别，失败会自动换图重试。
+登录。默认扫码；加 --pw 走账号密码。
 
 选项:
-  --manual        不自动识别，只取验证码图
-  --code=NNNN     指定验证码后提交
-  -h, --help      显示本帮助`,
+  --qr, -q        扫码登录（默认）
+  --pw, -p        账号密码登录
+  --manual        --pw 时生效：不自动识别验证码，只取图
+  --code=NNNN     --pw --manual 时生效：手动指定验证码
+  -h, --help      显示本帮助
+
+示例:
+  node src/login.mjs
+  node src/login.mjs --pw
+  node src/login.mjs --pw --manual --code=5x9r`,
+
+  'login-qr': `用法: node src/login-qr.mjs（等价于 node src/login.mjs）
+
+注意：新写法是 node src/login.mjs，本脚本作为旧入口保留。`,
+
+  'login-pw': `用法: node src/login-pw.mjs（等价于 node src/login.mjs --pw）
+
+注意：新写法是 node src/login.mjs --pw，本脚本作为旧入口保留。`,
 
   check: `用法: node src/probe-session.mjs
 

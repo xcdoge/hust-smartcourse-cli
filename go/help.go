@@ -8,7 +8,29 @@ import (
 // 每个命令的详细帮助。hsc <命令> --help 打印对应文本。
 // hsc help <命令> 走同一份数据，避免两处内容不一致。
 var commandHelp = map[string]string{
-	"login-qr": `用法: hsc login-qr
+	"login": `用法: hsc login [--pw] [--qr]
+
+登录。默认扫码；加 --pw 走账号密码。
+
+选项:
+  --qr, -q        扫码登录（默认）
+  --pw, -p        账号密码登录
+  --manual        --pw 时生效：不自动识别验证码，只取图
+  --code=NNNN     --pw --manual 时生效：手动指定验证码
+  -h, --help      显示本帮助
+
+示例:
+  hsc login
+  hsc login --pw
+  hsc login --pw --manual --code=5x9r
+
+旧名 hsc login-qr / hsc login-pw 仍然可用，等价于 hsc login / hsc login --pw`,
+
+	"login-qr": `用法: hsc login-qr（等价于 hsc login）
+
+注意：新写法是 hsc login，本命令作为旧名保留。`,
+
+	"login-qr-old": `用法: hsc login-qr
 
 扫码登录。二维码写到 state/auth/login-qr.png，用企业微信扫。
 登录成功后 cookie 存到 state/auth/cookies.json。
@@ -19,20 +41,9 @@ var commandHelp = map[string]string{
 示例:
   hsc login-qr`,
 
-	"login-pw": `用法: hsc login-pw [--manual] [--code=NNNN]
+	"login-pw": `用法: hsc login-pw（等价于 hsc login --pw）
 
-账号密码登录。需要先用 hsc cred save 存过凭据，或在 state/cred.txt 写两行。
-验证码由内置模型识别，失败会自动换图重试。
-
-选项:
-  --manual        不自动识别，只取验证码图，自己看
-  --code=NNNN     配合 --manual，指定验证码后提交
-  -h, --help      显示本帮助
-
-示例:
-  hsc cred save 2026xxxxxx 你的密码
-  hsc login-pw
-  hsc login-pw --manual --code=5x9r`,
+注意：新写法是 hsc login --pw，本命令作为旧名保留。`,
 
 	"check": `用法: hsc check
 

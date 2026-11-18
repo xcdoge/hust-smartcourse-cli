@@ -8,7 +8,7 @@ const LIST_FILE = stateFile('courses.json');
 const TARGET_FILE = stateFile('target.json');
 
 function loadJar() {
-  if (!fs.existsSync(COOKIES)) throw new Error('未登录，先执行 node src/login-qr.mjs 或 node src/login-pw.mjs');
+  if (!fs.existsSync(COOKIES)) throw new Error('未登录，先执行 node src/login.mjs');
   const jar = new CookieJar();
   jar.load(JSON.parse(fs.readFileSync(COOKIES, 'utf8')));
   return jar;
